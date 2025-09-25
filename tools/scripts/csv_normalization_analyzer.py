@@ -434,6 +434,44 @@ class CSVNormalizationAnalyzer:
         
         return rules
     
+    def _should_exclude_field(self, column_name: str, value: str) -> bool:
+        """Verifica si un campo debe ser excluido de la normalización"""
+        # Cargar reglas de exclusión
+        config_path = BASE_DIR / "tools" / "config" / "normalization_config.json"
+        if not config_path.exists():
+            return False
+            
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+            
+            exclusion_rules = config.get('normalization_rules', {}).get('exclusion_rules', {})
+            
+            # Verificar campos protegidos
+            protected_fields = exclusion_rules.get('protected_fields', [])
+            if column_name.lower() in [field.lower() for field in protected_fields]:
+                return True
+            
+            # Verificar patrones de email
+            email_patterns = exclusion_rules.get('email_patterns', [])
+            for pattern in email_patterns:
+                if pattern in value:
+                    return True
+            
+            # Verificar patrones protegidos (regex)
+            protected_patterns = exclusion_rules.get('protected_patterns', [])
+            for pattern in protected_patterns:
+                try:
+                    if re.search(pattern, value):
+                        return True
+                except re.error:
+                    continue
+                    
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass
+        
+        return False
+    
     def _normalize_text_with_capitalization(self, text: str) -> str:
         """Aplica reglas de capitalización y caracteres especiales a un texto"""
         if not text or not isinstance(text, str):
@@ -587,9 +625,9 @@ class CSVNormalizationAnalyzer:
     def _apply_rule(self, value: str, rule: ChangeRule) -> str:
         """Aplica una regla específica a un valor"""
         if rule.rule_type == "homologation":
-            return re.sub(rule.pattern, rule.replacement, value, flags=re.IGNORECASE)
+            return self._apply_homologation_rule(value, rule)
         elif rule.rule_type == "spelling":
-            return re.sub(rule.pattern, rule.replacement, value, flags=re.IGNORECASE)
+            return self._apply_spelling_rule(value, rule)
         elif rule.rule_type == "format":
             if rule.rule_id == "FMT001":  # Fechas
                 return self._normalize_date(value)
@@ -599,6 +637,76 @@ class CSVNormalizationAnalyzer:
                 return re.sub(r'\s+', ' ', value.strip())
         
         return value
+    
+    def _apply_homologation_rule(self, value: str, rule: ChangeRule) -> str:
+        """Aplica reglas de homologación consultando el diccionario específico"""
+        # Cargar configuración para obtener los diccionarios de reemplazo
+        config_path = BASE_DIR / "tools" / "config" / "normalization_config.json"
+        if not config_path.exists():
+            return value
+            
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+            
+            # Obtener diccionarios según el tipo de regla
+            if rule.rule_id == "HOM001":  # Instrumentos
+                corrections = config.get('custom_rules', {}).get('instrument_spelling_corrections', {})
+            elif rule.rule_id == "HOM002":  # Marcas
+                corrections = config.get('custom_rules', {}).get('brand_standardization', {})
+            elif rule.rule_id == "HOM003":  # Departamentos
+                corrections = config.get('custom_rules', {}).get('department_standardization', {})
+            elif rule.rule_id == "HOM004":  # Ubicaciones
+                corrections = config.get('custom_rules', {}).get('location_standardization', {})
+            else:
+                corrections = {}
+            
+            # Aplicar corrección si existe coincidencia exacta
+            for incorrect, correct in corrections.items():
+                if incorrect == value:
+                    return correct
+            
+            return value
+            
+        except (FileNotFoundError, json.JSONDecodeError):
+            return value
+    
+    def _apply_spelling_rule(self, value: str, rule: ChangeRule) -> str:
+        """Aplica reglas de corrección ortográfica consultando el diccionario específico"""
+        # Cargar configuración
+        config_path = BASE_DIR / "tools" / "config" / "normalization_config.json"
+        if not config_path.exists():
+            return value
+            
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+            
+            # Aplicar correcciones de instrumentos
+            if rule.rule_id == "SPL001":  # Instrumentos
+                corrections = config.get('normalization_rules', {}).get('instrument_spelling_corrections', {})
+                for incorrect, correct in corrections.items():
+                    if incorrect in value:
+                        value = value.replace(incorrect, correct)
+                        
+            # Aplicar correcciones de marcas
+            elif rule.rule_id == "SPL002":  # Marcas
+                corrections = config.get('normalization_rules', {}).get('brand_standardization', {})
+                for incorrect, correct in corrections.items():
+                    if incorrect in value:
+                        value = value.replace(incorrect, correct)
+                        
+            # Aplicar correcciones de departamentos
+            elif rule.rule_id == "SPL003":  # Departamentos
+                corrections = config.get('normalization_rules', {}).get('department_standardization', {})
+                for incorrect, correct in corrections.items():  
+                    if incorrect in value:
+                        value = value.replace(incorrect, correct)
+            
+            return value
+            
+        except (FileNotFoundError, json.JSONDecodeError):
+            return value
     
     def _normalize_date(self, value: str) -> str:
         """Normaliza formato de fecha"""
@@ -756,35 +864,52 @@ class CSVNormalizationAnalyzer:
         return result
     
     def generate_analysis_files(self, report: AnalysisReport):
-        """Genera todos los archivos de análisis"""
-        timestamp_str = report.timestamp.strftime("%Y%m%d_%H%M%S")
+        """Genera todos los archivos de análisis con nombres únicos que se actualizan"""
+        timestamp_str = report.timestamp.strftime("%Y-%m-%d %H:%M:%S")
         
-        # 1. Archivo de análisis detallado (JSON)
-        analysis_file = ANALYSIS_DIR / f"analisis_cambios_{timestamp_str}.json"
+        # Archivos únicos que se actualizan (sin timestamp en nombre)
+        analysis_file = ANALYSIS_DIR / "analisis_cambios_normalizacion.json"
+        sql_file = ANALYSIS_DIR / "propuesta_audit_trail.sql"
+        readme_file = ANALYSIS_DIR / "README_cambios_normalizacion.md"
+        summary_file = ANALYSIS_DIR / "resumen_ejecutivo.md"
+        instrument_file = ANALYSIS_DIR / "cambios_por_instrumento.md"
+        csv_file = ANALYSIS_DIR / "cambios_detallados.csv"
+        
+        # 1. Archivo de análisis detallado (JSON) con historial de versiones
+        analysis_data = asdict(report)
+        analysis_data['version_history'] = {
+            'generated_at': timestamp_str,
+            'version': f"v{report.timestamp.strftime('%Y%m%d_%H%M%S')}",
+            'total_changes': report.total_changes
+        }
+        
         with open(analysis_file, 'w', encoding='utf-8') as f:
-            json.dump(asdict(report), f, indent=2, ensure_ascii=False, default=str)
+            json.dump(analysis_data, f, indent=2, ensure_ascii=False, default=str)
         
         # 2. Archivo SQL con formato audit_trail
-        sql_file = ANALYSIS_DIR / f"propuesta_audit_trail_{timestamp_str}.sql"
         self._generate_audit_trail_sql(report, sql_file)
         
         # 3. README con opciones de cambios
-        readme_file = ANALYSIS_DIR / f"README_cambios_{timestamp_str}.md"
         self._generate_readme(report, readme_file)
         
         # 4. Resumen ejecutivo
-        summary_file = ANALYSIS_DIR / f"resumen_ejecutivo_{timestamp_str}.md"
         self._generate_executive_summary(report, summary_file)
         
         # 5. Lista detallada por instrumento
-        instrument_file = ANALYSIS_DIR / f"cambios_por_instrumento_{timestamp_str}.md"
         self._generate_instrument_report(report, instrument_file)
         
-        print(f"\n✅ Archivos generados:")
-        print(f"   📊 Análisis detallado: {analysis_file}")
-        print(f"   🗄️  SQL audit_trail: {sql_file}")
-        print(f"   📖 README opciones: {readme_file}")
-        print(f"   📋 Lista por instrumento: {instrument_file}")
+        # 6. Archivos CSV y Excel para fácil manipulación
+        excel_file = ANALYSIS_DIR / "cambios_detallados.xlsx"
+        self._generate_csv_report(report, csv_file)
+        self._generate_excel_report(report, excel_file)
+        
+        print(f"\n✅ Archivos actualizados (última versión: {timestamp_str}):")
+        print(f"   📊 Análisis detallado: {analysis_file.name}")
+        print(f"   🗄️  SQL audit_trail: {sql_file.name}")
+        print(f"   📖 README opciones: {readme_file.name}")
+        print(f"   📋 Lista por instrumento: {instrument_file.name}")
+        print(f"   📊 Datos CSV: {csv_file.name}")
+        print(f"   📊 Datos Excel: {excel_file.name}")
         print(f"   📋 Resumen ejecutivo: {summary_file}")
     
     def _generate_audit_trail_sql(self, report: AnalysisReport, sql_file: Path):
@@ -837,9 +962,12 @@ class CSVNormalizationAnalyzer:
         with open(readme_file, 'w', encoding='utf-8') as f:
             f.write("# Análisis de Cambios en Normalización de CSV\n\n")
             f.write(f"**ID de Análisis:** {report.analysis_id}\n")
-            f.write(f"**Fecha:** {report.timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"**Última actualización:** {report.timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"**Versión:** v{report.timestamp.strftime('%Y%m%d_%H%M%S')}\n")
             f.write(f"**Archivos analizados:** {len(report.files_analyzed)}\n")
             f.write(f"**Total de cambios detectados:** {report.total_changes}\n\n")
+            f.write("---\n")
+            f.write("*Este archivo se actualiza automáticamente con cada análisis. La versión y timestamp indican la última generación.*\n\n")
             
             f.write("## 📋 Resumen por Tipo de Cambio\n\n")
             for change_type, count in report.changes_by_type.items():
@@ -884,11 +1012,13 @@ class CSVNormalizationAnalyzer:
             f.write("- [ ] Rechazar todo el análisis\n\n")
             
             f.write("## 📁 Archivos Relacionados\n\n")
-            f.write(f"- **Análisis detallado (JSON):** `analisis_cambios_{report.timestamp.strftime('%Y%m%d_%H%M%S')}.json`\n")
-            f.write(f"- **SQL propuesto:** `propuesta_audit_trail_{report.timestamp.strftime('%Y%m%d_%H%M%S')}.sql`\n")
-            f.write(f"- **Resumen ejecutivo:** `resumen_ejecutivo_{report.timestamp.strftime('%Y%m%d_%H%M%S')}.md`\n")
-            f.write(f"- **📋 Lista por instrumento:** `cambios_por_instrumento_{report.timestamp.strftime('%Y%m%d_%H%M%S')}.md`\n")
+            f.write("- **Análisis detallado (JSON):** `analisis_cambios_normalizacion.json`\n")
+            f.write("- **SQL propuesto:** `propuesta_audit_trail.sql`\n")
+            f.write("- **Resumen ejecutivo:** `resumen_ejecutivo.md`\n")
+            f.write("- **📋 Lista por instrumento:** `cambios_por_instrumento.md`\n")
+            f.write("- **📊 Datos CSV:** `cambios_detallados.csv`\n")
             f.write(f"\n> 💡 **Recomendación:** Comience revisando el archivo 'Lista por instrumento' para ver los cambios organizados por código de equipo.\n")
+            f.write(f"> 📊 **Para análisis:** Use el archivo CSV para filtros y análisis avanzados en Excel.\n")
     
     def _generate_executive_summary(self, report: AnalysisReport, summary_file: Path):
         """Genera resumen ejecutivo para las ingenieras"""
@@ -944,9 +1074,12 @@ class CSVNormalizationAnalyzer:
         
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write("# 📋 Lista de Cambios por Código de Instrumento\n\n")
-            f.write(f"**Fecha de análisis:** {report.timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write(f"**Última actualización:** {report.timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"**Versión:** v{report.timestamp.strftime('%Y%m%d_%H%M%S')}\n")
             f.write(f"**Total de instrumentos afectados:** {len(changes_by_instrument)}\n")
             f.write(f"**Total de cambios detectados:** {report.total_changes}\n\n")
+            f.write("---\n")
+            f.write("*Archivo actualizado automáticamente. Versión y timestamp indican última generación.*\n\n")
             
             f.write("---\n\n")
             
@@ -1043,6 +1176,126 @@ class CSVNormalizationAnalyzer:
             f.write("5. **Ejecutar cambios aprobados** usando el script de aplicación\n\n")
             
             f.write("*Archivo generado automáticamente por el Sistema de Normalización CSV*\n")
+    
+    def _generate_csv_report(self, report: AnalysisReport, output_file: Path):
+        """Genera reporte de cambios en formato CSV para fácil manipulación"""
+        import csv
+        
+        with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = [
+                'archivo', 'codigo_instrumento', 'fila', 'celda', 'campo',
+                'valor_original', 'valor_corregido', 'tipo_cambio', 
+                'regla_id', 'descripcion_regla', 'confianza', 'impacto'
+            ]
+            
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            for change in report.detected_changes:
+                writer.writerow({
+                    'archivo': change.file_name,
+                    'codigo_instrumento': change.instrument_code,
+                    'fila': change.row_number,
+                    'celda': change.cell_reference,
+                    'campo': change.column_name,
+                    'valor_original': change.original_value,
+                    'valor_corregido': change.normalized_value,
+                    'tipo_cambio': change.change_rule.rule_type,
+                    'regla_id': change.change_rule.rule_id,
+                    'descripcion_regla': change.change_rule.description,
+                    'confianza': change.change_rule.confidence,
+                    'impacto': change.change_rule.impact_level
+                })
+    
+    def _generate_excel_report(self, report: AnalysisReport, output_file: Path):
+        """Genera reporte de cambios en formato Excel con múltiples hojas"""
+        try:
+            from openpyxl import Workbook
+            from openpyxl.styles import Font, PatternFill, Border, Side
+            from openpyxl.utils.dataframe import dataframe_to_rows
+            
+            wb = Workbook()
+            
+            # Eliminar hoja por defecto
+            default_sheet = wb.active
+            if default_sheet:
+                wb.remove(default_sheet)
+            
+            # Hoja 1: Resumen general
+            ws_summary = wb.create_sheet("Resumen")
+            ws_summary.append(['Métrica', 'Valor'])
+            ws_summary.append(['Fecha de análisis', report.timestamp.strftime('%Y-%m-%d %H:%M:%S')])
+            ws_summary.append(['Total cambios', report.total_changes])
+            ws_summary.append(['Archivos analizados', len(report.files_analyzed)])
+            
+            # Aplicar formato a encabezados
+            for cell in ws_summary[1]:
+                cell.font = Font(bold=True)
+                cell.fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+            
+            # Hoja 2: Todos los cambios
+            ws_changes = wb.create_sheet("Todos los Cambios")
+            headers = [
+                'Archivo', 'Código Instrumento', 'Fila', 'Celda', 'Campo',
+                'Valor Original', 'Valor Corregido', 'Tipo Cambio', 
+                'Regla ID', 'Descripción', 'Confianza', 'Impacto'
+            ]
+            ws_changes.append(headers)
+            
+            for change in report.detected_changes:
+                ws_changes.append([
+                    change.file_name,
+                    change.instrument_code,
+                    change.row_number,
+                    change.cell_reference,
+                    change.column_name,
+                    change.original_value,
+                    change.normalized_value,
+                    change.change_rule.rule_type,
+                    change.change_rule.rule_id,
+                    change.change_rule.description,
+                    change.change_rule.confidence,
+                    change.change_rule.impact_level
+                ])
+            
+            # Formato para encabezados
+            for cell in ws_changes[1]:
+                cell.font = Font(bold=True)
+                cell.fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+            
+            # Hoja 3: Por tipo de cambio
+            ws_by_type = wb.create_sheet("Por Tipo")
+            ws_by_type.append(['Tipo de Cambio', 'Cantidad'])
+            
+            for change_type, count in report.changes_by_type.items():
+                ws_by_type.append([change_type.title(), count])
+            
+            # Formato
+            for cell in ws_by_type[1]:
+                cell.font = Font(bold=True)
+                cell.fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+            
+            # Ajustar ancho de columnas (método simplificado)
+            for ws in wb.worksheets:
+                for col in range(1, ws.max_column + 1):
+                    max_length = 0
+                    for row in range(1, min(ws.max_row + 1, 100)):  # Limitar a 100 filas para rendimiento
+                        cell_value = ws.cell(row=row, column=col).value
+                        if cell_value:
+                            max_length = max(max_length, len(str(cell_value)))
+                    
+                    # Convertir número de columna a letra
+                    from openpyxl.utils import get_column_letter
+                    column_letter = get_column_letter(col)
+                    adjusted_width = min(max_length + 2, 50)
+                    ws.column_dimensions[column_letter].width = adjusted_width
+            
+            wb.save(output_file)
+            
+        except ImportError:
+            print("⚠️  openpyxl no disponible. Solo se generará archivo CSV.")
+        except Exception as e:
+            print(f"⚠️  Error generando Excel: {e}")
 
 def main():
     """Función principal"""
