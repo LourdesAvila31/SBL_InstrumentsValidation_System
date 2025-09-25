@@ -1,0 +1,301 @@
+{
+  "system_config": {
+    "version": "1.0",
+    "description": "Configuración del Sistema de Normalización CSV",
+    "last_updated": "2025-09-25"
+  },
+  
+  "directories": {
+    "csv_originals": "app/Modules/Internal/ArchivosSql/Archivos_CSV_originales",
+    "csv_normalized": "app/Modules/Internal/ArchivosSql/Archivos_Normalize", 
+    "analysis_output": "tools/analysis_results",
+    "sql_output": "app/Modules/Internal/ArchivosSql/Archivos_BD_SBL/SBL_inserts"
+  },
+  
+  "csv_files": {
+    "audit_trail": "AT_instrumentos_original_v2.csv",
+    "instruments": "LM_instrumentos_original_v2.csv",
+    "risk_plan": "PR_instrumentos_original_v2.csv", 
+    "certificates": "CERT_instrumentos_original_v2.csv"
+  },
+  
+  "audit_trail_settings": {
+    "default_empresa_id": 1,
+    "default_segmento_actor": "Ingenieras de Validación",
+    "batch_size": 100,
+    "require_engineer_signature": true
+  },
+  
+  "normalization_rules": {
+    "confidence_threshold": 0.80,
+    "auto_approve_low_impact": false,
+    "require_approval_for_dates": true,
+    "require_approval_for_numeric": true,
+    "max_changes_per_file": 1000
+  },
+  
+  "email_whitelist": [
+    "lourdesmarienavila@gmail.com",
+    "practicas.validacion@sblpharma.com", 
+    "validacion@sblpharma.com",
+    "validacion3@sblpharma.com",
+    "validacion5@sblpharma.com",
+    "validacion6@sblpharma.com",
+    "validacion7@sblpharma.com",
+    "validacion8@sblpharma.com",
+    "sistemas@sblpharma.com",
+    "sistemas2@sblpharma.com"
+  ],
+  
+  "custom_rules": {
+    "instrument_spelling_corrections": {
+      "Termohigrometro": "Termohigrómetro",
+      "termohigrometro": "termohigrómetro",
+      "TERMOHIGROMETRO": "Termohigrómetro",
+      "termohigrÓmetro": "termohigrómetro",
+      "TermohigrÓmetro": "Termohigrómetro",
+      "Termometro digital": "Termómetro digital",
+      "termometro digital": "termómetro digital",
+      "TERMOMETRO DIGITAL": "Termómetro digital",
+      "termometro": "termómetro",
+      "Termometro": "Termómetro",
+      "TERMOMETRO": "Termómetro",
+      "Termometro IR": "Termómetro IR",
+      "termometro IR": "termómetro IR",
+      "TERMOMETRO IR": "Termómetro IR",
+      "Bascula digital": "Báscula digital",
+      "bascula digital": "báscula digital",
+      "BASCULA DIGITAL": "Báscula digital",
+      "bascula": "báscula",
+      "Bascula": "Báscula",
+      "BASCULA": "Báscula",
+      "amperimetro": "amperímetro",
+      "Amperimetro": "Amperímetro",
+      "AMPERIMETRO": "Amperímetro",
+      "AmperÍmetro": "amperímetro",
+      "anemometro": "anemómetro",
+      "Anemometro": "Anemómetro",
+      "ANEMOMETRO": "Anemómetro",
+      "AnemÓmetro": "anemómetro",
+      "balometro": "balómetro",
+      "Balometro": "Balómetro",
+      "BALOMETRO": "Balómetro",
+      "BalÓmetro": "balómetro",
+      "cronometro": "cronómetro",
+      "Cronometro": "Cronómetro",
+      "CRONOMETRO": "Cronómetro",
+      "CronÓmetro": "cronómetro",
+      "manometro": "manómetro",
+      "Manometro": "Manómetro",
+      "MANOMETRO": "Manómetro",
+      "ManÓmetro": "manómetro",
+      "luxometro": "luxómetro",
+      "Luxometro": "Luxómetro",
+      "LUXOMETRO": "Luxómetro",
+      "LuxÓmetro": "luxómetro",
+      "tacometro": "tacómetro",
+      "Tacometro": "Tacómetro",
+      "TACOMETRO": "Tacómetro",
+      "TacÓmetro": "tacómetro",
+      "micrometro": "micrómetro",
+      "Micrometro": "Micrómetro",
+      "MICROMETRO": "Micrómetro",
+      "MicrÓmetro": "micrómetro",
+      "viscosimetro": "viscosímetro",
+      "Viscosimetro": "Viscosímetro",
+      "VISCOSIMETRO": "Viscosímetro",
+      "ViscosÍmetro": "viscosímetro",
+      "multimetro": "multímetro",
+      "Multimetro": "Multímetro",
+      "MULTIMETRO": "Multímetro",
+      "MultÍmetro": "multímetro",
+      "densimetro": "densímetro",
+      "Densimetro": "Densímetro",
+      "DENSIMETRO": "Densímetro",
+      "DensÍmetro": "densímetro",
+      "durometro": "durómetro",
+      "Durometro": "Durómetro",
+      "DUROMETRO": "Durómetro",
+      "DurÓmetro": "durómetro",
+      "fusiometro": "fusiómetro",
+      "Fusiometro": "Fusiómetro",
+      "FUSIOMETRO": "Fusiómetro",
+      "FusiÓmetro": "fusiómetro"
+    },
+    
+    "brand_standardization": {
+      "Ohaus": "OHAUS",
+      "ohaus": "OHAUS",
+      "OHAUS": "OHAUS",
+      "Extech Instrument": "Extech Instruments",
+      "Extech": "Extech Instruments",
+      "extech": "Extech Instruments",
+      "Watson marlow": "Watson Marlow",
+      "watson marlow": "Watson Marlow",
+      "HANNA instruments": "HANNA Instruments",
+      "Hanna Instruments": "HANNA Instruments", 
+      "hanna instruments": "HANNA Instruments",
+      "Hanna instruments": "HANNA Instruments",
+      "OAKTON": "Oakton",
+      "oakton": "Oakton",
+      "Novus": "NOVUS",
+      "novus": "NOVUS"
+    },
+    
+    "department_standardization": {
+      "Almacen": "Almacén",
+      "almacen": "Almacén",
+      "Desarrollo Analitico": "Desarrollo Analítico",
+      "desarrollo analitico": "Desarrollo Analítico",
+      "Desarrollo Farmaceutico": "Desarrollo Farmacéutico", 
+      "desarrollo farmaceutico": "Desarrollo Farmacéutico",
+      "Fabricacion": "Fabricación",
+      "fabricacion": "Fabricación",
+      "Gestion de la Calidad": "Gestión de la Calidad",
+      "gestion de la calidad": "Gestión de la Calidad",
+      "Logistica": "Logística",
+      "logistica": "Logística",
+      "Microbiologia": "Microbiología",
+      "microbiologia": "Microbiología",
+      "Validacion": "Validación",
+      "validacion": "Validación"
+    },
+    
+    "location_standardization": {
+      "Analisis Fisicoquimicos": "Análisis Fisicoquímicos",
+      "analisis fisicoquimicos": "Análisis Fisicoquímicos",
+      "Analisis Instrumental": "Análisis Instrumental",
+      "analisis instrumental": "Análisis Instrumental",
+      "Disolucion": "Disolución",
+      "disolucion": "Disolución",
+      "Area de Balanzas": "Área de Balanzas",
+      "area de balanzas": "Área de Balanzas",
+      "Preparacion Microbiologica": "Preparación Microbiológica",
+      "preparacion microbiologica": "Preparación Microbiológica",
+      "Almacen de Validacion": "Almacén de Validación",
+      "almacen de validacion": "Almacén de Validación",
+      "Movil": "Móvil",
+      "movil": "Móvil"
+    },
+    
+    "status_standardization": {
+      "activo": "Activo",
+      "ACTIVO": "Activo", 
+      "Active": "Activo",
+      "active": "Activo",
+      "inactivo": "Inactivo",
+      "INACTIVO": "Inactivo",
+      "Inactive": "Inactivo",
+      "inactive": "Inactivo",
+      "calibrado": "Calibrado",
+      "CALIBRADO": "Calibrado",
+      "Calibrated": "Calibrado",
+      "calibrated": "Calibrado",
+      "vencido": "Vencido",
+      "VENCIDO": "Vencido",
+      "Expired": "Vencido",
+      "expired": "Vencido"
+    },
+    
+    "placeholder_standardization": {
+      "ND": "ND",
+      "nd": "ND", 
+      "N/D": "ND",
+      "n/d": "ND",
+      "N.D.": "ND",
+      "n.d.": "ND",
+      "NA": "NA",
+      "na": "NA",
+      "N/A": "NA", 
+      "n/a": "NA",
+      "N.A.": "NA",
+      "n.a.": "NA",
+      "NULL": "NA",
+      "null": "NA",
+      "Null": "NA"
+    },
+    
+    "units_standardization": {
+      "grados C": "°C",
+      "ºC": "°C",
+      "celsius": "°C",
+      "Celsius": "°C",
+      "kg/cm2": "kg/cm²",
+      "Kg/cm2": "kg/cm²",
+      "KG/CM2": "kg/cm²",
+      "m/s": "m/s",
+      "M/S": "m/s",
+      "mm": "mm",
+      "MM": "mm",
+      "cm": "cm",
+      "CM": "cm"
+    },
+    
+    "exclusion_rules": {
+      "email_patterns": [
+        "@sblpharma.com",
+        "@gmail.com",
+        "@hotmail.com",
+        "@outlook.com",
+        "@yahoo.com"
+      ],
+      "protected_fields": [
+        "Usuario",
+        "email",
+        "correo",
+        "Email",
+        "Correo",
+        "usuario"
+      ],
+      "protected_patterns": [
+        "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
+      ]
+    },
+    
+    "format_standardization": {
+      "patterns": [
+        {"pattern": "([a-z])([A-Z])", "replacement": "\\1 \\2"},
+        {"pattern": "\\s+", "replacement": " "},
+        {"pattern": "^\\s+|\\s+$", "replacement": ""},
+        {"pattern": "([a-zA-Z])([0-9])", "replacement": "\\1 \\2"},
+        {"pattern": "([0-9])([a-zA-Z])", "replacement": "\\1 \\2"}
+      ]
+    },
+    
+    "capitalization_rules": {
+      "first_letter_uppercase": true,
+      "preserve_acronyms": ["IR", "UV", "LCD", "LED", "GPS", "USB", "RFID", "PC", "AC", "DC"],
+      "proper_nouns": {
+        "instrument_types": ["Termohigrómetro", "Termómetro", "Báscula", "Amperímetro", "Anemómetro", "Balómetro", "Cronómetro", "Manómetro", "Luxómetro", "Tacómetro", "Micrómetro", "Viscosímetro", "Multímetro", "Densímetro", "Durómetro", "Fusiómetro"],
+        "brands": ["Fluke", "Testo", "Omega", "Keysight", "Agilent", "Yokogawa", "Extech", "Klein Tools", "Hioki", "Megger"],
+        "departments": ["Laboratorio", "Metrología", "Calibración", "Producción", "Calidad", "Mantenimiento", "Ingeniería"]
+      }
+    }
+  },
+  
+  "additional_settings": {
+    "enabled": true,
+    "file_path": "tools/scripts/custom_normalization_rules.py",
+    "description": "Permite agregar reglas personalizadas de normalización"
+  },
+  
+  "logging": {
+    "level": "INFO",
+    "file": "tools/analysis_results/normalization.log",
+    "max_size_mb": 10,
+    "backup_count": 5
+  },
+
+  "notifications": {
+    "enabled": false,
+    "email_on_completion": false,
+    "email_recipients": [],
+    "smtp_settings": {
+      "server": "",
+      "port": 587,
+      "use_tls": true,
+      "username": "",
+      "password": ""
+    }
+  }
+}
