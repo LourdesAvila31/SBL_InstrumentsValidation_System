@@ -1,7 +1,7 @@
 {
-  "name": "sistema-computarizado-iso-17025",
+  "name": "sistema-interno-iso17025",
   "version": "1.0.0",
-  "description": "Sistema computarizado de gestión de calibraciones bajo la norma ISO 17025 con frontend HTML5/Bootstrap y backend PHP.",
+  "description": "Sistema interno de gestión y auditoría para laboratorio de calibraciones ISO 17025 - Portal administrativo con frontend HTML5/Bootstrap y backend PHP.",
   "main": "public/index.php",
   "scripts": {
     "start": "npm run serve",

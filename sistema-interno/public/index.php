@@ -5,7 +5,7 @@ require_once __DIR__ . '/../app/Core/permissions.php';
 
 session_start();
 
-$scopes = ['internal', 'tenant', 'service'];
+$scopes = ['internal'];
 
 $requestedScope = $_GET['portal'] ?? $_GET['app'] ?? null;
 if (is_string($requestedScope)) {
@@ -38,15 +38,10 @@ if ($requestPath === '/index.php') {
     $requestPath = '/';
 }
 
-if (preg_match('#^/(internal|tenant|service)(/.*)?$#', $requestPath, $matches)) {
+if (preg_match('#^/(internal)(/.*)?$#', $requestPath, $matches)) {
     $scope = $matches[1];
     $resource = ltrim($matches[2] ?? '', '/');
     if ($resource === '') {
-        $resource = 'index.html';
-    }
-  
-    if ($scope === 'service' && !can_access_service_module()) {
-        $scope = 'internal';
         $resource = 'index.html';
     }
 
@@ -59,41 +54,23 @@ $context = resolve_app_context($scopes);
 
 if ($requestPath === '/' || $requestPath === '') {
     if (isset($_SESSION['usuario_id'])) {
-        if ($context === 'service' && can_access_service_module()) {
-            $target = 'service/index.html';
-        } else {
-            $target = $context === 'tenant' ? 'tenant/index.html' : 'internal/index.html';
-        }
+        $target = 'internal/index.html';
     } else {
-        $target = $context === 'tenant'
-            ? 'tenant/usuarios/login.html'
-            : 'internal/usuarios/login.html';
+        $target = 'internal/usuarios/login.html';
     }
 
     header('Location: ' . Paths::app($target));
     exit;
 }
 
-if ($requestPath === '/internal' || $requestPath === '/tenant') {
-    $target = $context === 'tenant' ? 'tenant/index.html' : 'internal/index.html';
+if ($requestPath === '/internal') {
+    $target = 'internal/index.html';
     header('Location: ' . Paths::app($target));
     exit;
 }
 
-if ($requestPath === '/service') {
-    $target = can_access_service_module()
-        ? 'service/index.html'
-        : 'internal/index.html';
-    header('Location: ' . Paths::app($target));
-    exit;
-}
-
-if ($context === 'service' && can_access_service_module()) {
-    header('Location: ' . Paths::app('service/index.html'));
-    exit;
-}
-
-header('Location: ' . Paths::app($context === 'tenant' ? 'tenant/index.html' : 'internal/index.html'));
+// Redirección por defecto al portal interno
+header('Location: ' . Paths::app('internal/index.html'));
 exit;
 
 function resolve_app_context(array $scopes): string

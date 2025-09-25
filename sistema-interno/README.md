@@ -1,31 +1,23 @@
-# Sistema Computarizado ISO 17025
+# Sistema Interno ISO 17025
 
-Aplicación web para la gestión de calibraciones que combina un backend PHP modular y una
-interfaz HTML5/Bootstrap. El proyecto ahora se organiza en torno a una carpeta `app/`
-para el código del dominio y a `public/` como punto de entrada HTTP.
+Sistema administrativo para la gestión interna de un laboratorio de calibraciones que combina un backend PHP modular y una interfaz HTML5/Bootstrap. Este sistema está dedicado exclusivamente a operaciones internas del laboratorio.
 
 ## Arquitectura de carpetas
 
 - `app/`
-  - `Core/`: utilidades compartidas (conexión a base de datos, protección de sesión,
+  - `Core/`: utilidades compartidas (conexión a base de datos `iso17025_interno`, protección de sesión,
     helpers y control de permisos).
-  - `Modules/`: lógica de negocio segmentada por ámbito. Dentro encontrarás
-    `Modules/Internal/` (auditoría, planeación, configuración, usuarios, etc.),
-    `Modules/Tenant/` (operaciones disponibles para las empresas externas como
-    instrumentos, calibraciones, reportes) y los recursos SQL en
-    `Modules/Internal/ArchivosSql/`.
+  - `Modules/`: lógica de negocio segmentada por ámbito. Contiene:
+    - `Modules/Internal/` (auditoría, planeación, configuración, usuarios, dashboard, etc.)
+    - `Modules/Api/` (APIs para operaciones internas)
+    - `Modules/Database/` (gestión de base de datos)
+    - Los recursos SQL están en `Modules/Internal/ArchivosSql/`.
   - `index.php`: comprobación básica para el estado del backend.
 - `public/`
-  - `assets/`: recursos estáticos compartidos (CSS, JS, imágenes, incluyendo el
-    núcleo JS `portal-base.js`, los bundles por portal (`scripts-internal.js`,
-    `scripts-service.js`, `scripts-tenant.js`) y `topbar.js`).
+  - `assets/`: recursos estáticos (CSS, JS, imágenes, incluyendo el
+    núcleo JS `portal-base.js`, bundle interno `scripts-internal.js` y `topbar.js`).
   - `apps/internal/`: aplicación HTML para los usuarios internos (auditoría,
-    planeación, catálogos, administración, etc.).
-  - `apps/tenant/`: portal simplificado para empresas cliente con acceso a
-    instrumentos, planeación, calibraciones y reportes filtrados por empresa.
-    Los códigos QR generados para etiquetas y certificados redirigen a
-    `apps/tenant/instrumentos/qr_details.html`; el flujo QR es exclusivo del
-    portal tenant y no existe una vista compartida en `apps/shared`.
+    planeación, catálogos, administración, configuración, gestión de usuarios, etc.).
   - `backend/`: fachada pública que enruta las peticiones HTTP hacia los módulos en
     `app/Modules/` sin exponer el código fuente.
   - `index.php`: router contextual que expone rutas `/internal/...` y
