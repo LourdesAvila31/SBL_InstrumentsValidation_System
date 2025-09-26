@@ -14,6 +14,9 @@ require_once __DIR__ . '/ProcessQualificationManager.php';
 require_once __DIR__ . '/SystemValidationManager.php';
 require_once __DIR__ . '/ChangeManagementSystem.php';
 require_once __DIR__ . '/ContinuousMonitoringManager.php';
+require_once __DIR__ . '/RiskManagementSystem.php';
+require_once __DIR__ . '/DocumentManagementSystem.php';
+require_once __DIR__ . '/SupplierAssessmentModule.php';
 
 // Verificar autenticación y permisos
 if (session_status() === PHP_SESSION_NONE) {
@@ -41,11 +44,14 @@ try {
     $validationManager = new SystemValidationManager($usuario_id);
     $changeManager = new ChangeManagementSystem($usuario_id);
     $monitoringManager = new ContinuousMonitoringManager($usuario_id);
+    $riskManager = new RiskManagementSystem($usuario_id);
+    $documentManager = new DocumentManagementSystem($usuario_id);
+    $supplierManager = new SupplierAssessmentModule($usuario_id);
 
     switch ($module) {
         case 'dashboard':
             handleDashboardRequests($action, $method, $lifecycleManager, $qualificationManager, 
-                                  $validationManager, $changeManager, $monitoringManager);
+                                  $validationManager, $changeManager, $monitoringManager, $riskManager, $documentManager, $supplierManager);
             break;
             
         case 'lifecycle':
@@ -68,6 +74,18 @@ try {
             handleMonitoringRequests($action, $method, $monitoringManager);
             break;
             
+        case 'risks':
+            handleRiskRequests($action, $method, $riskManager);
+            break;
+            
+        case 'documents':
+            handleDocumentRequests($action, $method, $documentManager);
+            break;
+            
+        case 'suppliers':
+            handleSupplierRequests($action, $method, $supplierManager);
+            break;
+            
         default:
             http_response_code(400);
             echo json_encode(['error' => 'Módulo no válido']);
@@ -83,16 +101,17 @@ try {
 /**
  * Maneja las solicitudes del dashboard principal
  */
-function handleDashboardRequests($action, $method, $lifecycle, $qualification, $validation, $changes, $monitoring) {
+function handleDashboardRequests($action, $method, $lifecycle, $qualification, $validation, $changes, $monitoring, $risks, $documents, $suppliers) {
     switch ($action) {
         case 'dashboard':
             if ($method === 'GET') {
                 $dashboard_data = [
-                    'overview' => getDashboardOverview($lifecycle, $qualification, $validation, $changes, $monitoring),
+                    'overview' => getDashboardOverview($lifecycle, $qualification, $validation, $changes, $monitoring, $risks, $documents, $suppliers),
                     'recent_activity' => getRecentActivity($lifecycle, $qualification, $validation, $changes),
                     'alerts' => getActiveAlerts($monitoring),
                     'kpis' => getKeyPerformanceIndicators($lifecycle, $qualification, $validation, $changes, $monitoring),
                     'compliance_status' => getComplianceStatus($validation, $monitoring),
+                    'risk_summary' => getRiskSummary($risks),
                     'timestamp' => date('Y-m-d H:i:s')
                 ];
                 
@@ -102,7 +121,7 @@ function handleDashboardRequests($action, $method, $lifecycle, $qualification, $
             
         case 'overview':
             if ($method === 'GET') {
-                echo json_encode(['success' => true, 'data' => getDashboardOverview($lifecycle, $qualification, $validation, $changes, $monitoring)]);
+                echo json_encode(['success' => true, 'data' => getDashboardOverview($lifecycle, $qualification, $validation, $changes, $monitoring, $risks, $documents, $suppliers)]);
             }
             break;
             
@@ -524,7 +543,7 @@ function handleMonitoringRequests($action, $method, $monitoring) {
 /**
  * Funciones auxiliares para el dashboard
  */
-function getDashboardOverview($lifecycle, $qualification, $validation, $changes, $monitoring) {
+function getDashboardOverview($lifecycle, $qualification, $validation, $changes, $monitoring, $risks, $documents, $suppliers) {
     return [
         'system_lifecycle' => [
             'active_systems' => 12,
@@ -559,6 +578,32 @@ function getDashboardOverview($lifecycle, $qualification, $validation, $changes,
             'system_availability' => 99.95,
             'monitoring_metrics' => 45,
             'anomalies_last_24h' => 2
+        ],
+        'risk_management' => [
+            'total_assessments' => 8,
+            'active_assessments' => 6,
+            'critical_risks' => 2,
+            'high_risks' => 5,
+            'pending_mitigations' => 12,
+            'risk_coverage' => 94.5
+        ],
+        'document_management' => [
+            'total_documents' => 156,
+            'effective_documents' => 142,
+            'pending_approval' => 8,
+            'due_for_review' => 6,
+            'gxp_documents' => 89,
+            'electronic_signatures' => 234,
+            'workflow_completion_rate' => 96.8
+        ],
+        'supplier_assessment' => [
+            'total_suppliers' => 24,
+            'approved_suppliers' => 18,
+            'pending_qualification' => 4,
+            'critical_risk_suppliers' => 2,
+            'active_qualifications' => 6,
+            'completed_audits' => 15,
+            'supplier_compliance_rate' => 92.3
         ]
     ];
 }
@@ -688,5 +733,466 @@ function generateExecutiveReport($lifecycle, $qualification, $validation, $chang
             'validation_cycle_time' => 12.5 // days
         ]
     ];
+}
+
+/**
+ * Maneja las solicitudes del módulo de gestión de riesgos
+ */
+function handleRiskRequests($action, $method, $risks) {
+    switch ($action) {
+        case 'list':
+            if ($method === 'GET') {
+                $filters = [
+                    'risk_level' => $_GET['risk_level'] ?? null,
+                    'risk_category' => $_GET['risk_category'] ?? null,
+                    'acceptability' => $_GET['acceptability'] ?? null,
+                    'system_name' => $_GET['system_name'] ?? null
+                ];
+                echo json_encode($risks->getAllRiskAssessments(array_filter($filters)));
+            }
+            break;
+            
+        case 'create_assessment':
+            if ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                echo json_encode($risks->createRiskAssessment($data));
+            }
+            break;
+            
+        case 'add_risk':
+            if ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                $assessment_id = $data['assessment_id'] ?? null;
+                if ($assessment_id) {
+                    echo json_encode($risks->addRiskItem($assessment_id, $data));
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'ID de evaluación requerido']);
+                }
+            }
+            break;
+            
+        case 'create_mitigation':
+            if ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                $risk_item_id = $data['risk_item_id'] ?? null;
+                if ($risk_item_id) {
+                    echo json_encode($risks->createMitigation($risk_item_id, $data));
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'ID de riesgo requerido']);
+                }
+            }
+            break;
+            
+        case 'calculate_residual':
+            if ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                $risk_item_id = $data['risk_item_id'] ?? null;
+                if ($risk_item_id) {
+                    echo json_encode($risks->calculateResidualRisk($risk_item_id, $data));
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'ID de riesgo requerido']);
+                }
+            }
+            break;
+            
+        case 'dashboard':
+            if ($method === 'GET') {
+                echo json_encode($risks->getRiskDashboard());
+            }
+            break;
+            
+        case 'generate_report':
+            if ($method === 'GET') {
+                $assessment_id = $_GET['assessment_id'] ?? null;
+                $report_type = $_GET['report_type'] ?? 'FULL';
+                if ($assessment_id) {
+                    echo json_encode($risks->generateRiskAssessmentReport($assessment_id, $report_type));
+                } else {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'ID de evaluación requerido']);
+                }
+            }
+            break;
+            
+        default:
+            http_response_code(400);
+            echo json_encode(['error' => 'Acción no válida para gestión de riesgos']);
+            break;
+    }
+}
+
+/**
+ * Obtiene resumen de riesgos para el dashboard
+ */
+function getRiskSummary($risks) {
+    $risk_dashboard = $risks->getRiskDashboard();
+    if ($risk_dashboard['success']) {
+        return $risk_dashboard['data']['overview'];
+    }
+    
+    return [
+        'total_assessments' => 0,
+        'active_assessments' => 0,
+        'critical_risks' => 0,
+        'high_risks' => 0,
+        'pending_mitigations' => 0
+    ];
+}
+
+/**
+ * Maneja las solicitudes del módulo de documentos
+ */
+function handleDocumentRequests($action, $method, $documents) {
+    switch ($action) {
+        case 'list':
+            if ($method === 'GET') {
+                $filters = [
+                    'document_type' => $_GET['document_type'] ?? null,
+                    'status' => $_GET['status'] ?? null,
+                    'classification' => $_GET['classification'] ?? null,
+                    'system_id' => $_GET['system_id'] ?? null,
+                    'search' => $_GET['search'] ?? null,
+                    'limit' => $_GET['limit'] ?? 50,
+                    'offset' => $_GET['offset'] ?? 0
+                ];
+                
+                $docs = $documents->getDocuments(array_filter($filters));
+                echo json_encode(['success' => true, 'data' => $docs]);
+            }
+            break;
+            
+        case 'create':
+            if ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                $document_id = $documents->createDocument($data);
+                echo json_encode(['success' => true, 'document_id' => $document_id]);
+            }
+            break;
+            
+        case 'get':
+            if ($method === 'GET') {
+                $document_id = $_GET['id'] ?? null;
+                if (!$document_id) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'ID de documento requerido']);
+                    return;
+                }
+                
+                $document = $documents->getDocument($document_id);
+                if (!$document) {
+                    http_response_code(404);
+                    echo json_encode(['error' => 'Documento no encontrado']);
+                    return;
+                }
+                
+                echo json_encode(['success' => true, 'data' => $document]);
+            }
+            break;
+            
+        case 'versions':
+            if ($method === 'GET') {
+                $document_id = $_GET['id'] ?? null;
+                if (!$document_id) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'ID de documento requerido']);
+                    return;
+                }
+                
+                $versions = $documents->getDocumentVersions($document_id);
+                echo json_encode(['success' => true, 'data' => $versions]);
+                
+            } elseif ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                $document_id = $data['document_id'] ?? null;
+                
+                if (!$document_id) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'ID de documento requerido']);
+                    return;
+                }
+                
+                $version_id = $documents->createDocumentVersion($document_id, $data);
+                echo json_encode(['success' => true, 'version_id' => $version_id]);
+            }
+            break;
+            
+        case 'sign':
+            if ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                $document_id = $data['document_id'] ?? null;
+                
+                if (!$document_id) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'ID de documento requerido']);
+                    return;
+                }
+                
+                $signature_id = $documents->signDocument($document_id, $data);
+                echo json_encode(['success' => true, 'signature_id' => $signature_id]);
+            }
+            break;
+            
+        case 'signatures':
+            if ($method === 'GET') {
+                $document_id = $_GET['id'] ?? null;
+                $version = $_GET['version'] ?? null;
+                
+                if (!$document_id) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'ID de documento requerido']);
+                    return;
+                }
+                
+                $signatures = $documents->getDocumentSignatures($document_id, $version);
+                echo json_encode(['success' => true, 'data' => $signatures]);
+            }
+            break;
+            
+        case 'workflow':
+            if ($method === 'GET') {
+                $document_id = $_GET['id'] ?? null;
+                
+                if (!$document_id) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'ID de documento requerido']);
+                    return;
+                }
+                
+                $workflow = $documents->getDocumentWorkflow($document_id);
+                $steps = [];
+                
+                if ($workflow) {
+                    $steps = $documents->getWorkflowSteps($workflow['id']);
+                }
+                
+                echo json_encode(['success' => true, 'data' => [
+                    'workflow' => $workflow,
+                    'steps' => $steps
+                ]]);
+                
+            } elseif ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                $document_id = $data['document_id'] ?? null;
+                
+                if (!$document_id) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'ID de documento requerido']);
+                    return;
+                }
+                
+                $workflow_id = $documents->startApprovalWorkflow($document_id, $data);
+                echo json_encode(['success' => true, 'workflow_id' => $workflow_id]);
+            }
+            break;
+            
+        case 'workflow_step':
+            if ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                $workflow_id = $data['workflow_id'] ?? null;
+                $step_id = $data['step_id'] ?? null;
+                
+                if (!$workflow_id || !$step_id) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Workflow ID y Step ID requeridos']);
+                    return;
+                }
+                
+                $result = $documents->processWorkflowStep($workflow_id, $step_id, $data);
+                echo json_encode(['success' => true, 'data' => $result]);
+            }
+            break;
+            
+        case 'metrics':
+            if ($method === 'GET') {
+                $filters = [
+                    'start_date' => $_GET['start_date'] ?? null,
+                    'end_date' => $_GET['end_date'] ?? null
+                ];
+                
+                $metrics = $documents->getDocumentMetrics(array_filter($filters));
+                echo json_encode(['success' => true, 'data' => $metrics]);
+            }
+            break;
+            
+        case 'types':
+            if ($method === 'GET') {
+                echo json_encode(['success' => true, 'data' => DocumentManagementSystem::DOCUMENT_TYPES]);
+            }
+            break;
+            
+        case 'statuses':
+            if ($method === 'GET') {
+                echo json_encode(['success' => true, 'data' => DocumentManagementSystem::DOCUMENT_STATUS]);
+            }
+            break;
+            
+        case 'classifications':
+            if ($method === 'GET') {
+                echo json_encode(['success' => true, 'data' => DocumentManagementSystem::CLASSIFICATION_LEVELS]);
+            }
+            break;
+            
+        default:
+            http_response_code(400);
+            echo json_encode(['error' => 'Acción no válida']);
+            break;
+    }
+}
+
+/**
+ * Maneja las solicitudes del módulo de evaluación de proveedores
+ */
+function handleSupplierRequests($action, $method, $suppliers) {
+    switch ($action) {
+        case 'list':
+            if ($method === 'GET') {
+                $filters = [
+                    'supplier_type' => $_GET['supplier_type'] ?? null,
+                    'gamp_category' => $_GET['gamp_category'] ?? null,
+                    'risk_level' => $_GET['risk_level'] ?? null,
+                    'status' => $_GET['status'] ?? null,
+                    'search' => $_GET['search'] ?? null,
+                    'limit' => $_GET['limit'] ?? 50,
+                    'offset' => $_GET['offset'] ?? 0
+                ];
+                
+                $supplier_list = $suppliers->getSuppliers($filters);
+                echo json_encode(['success' => true, 'data' => $supplier_list]);
+            }
+            break;
+            
+        case 'create':
+            if ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                
+                try {
+                    $supplier_id = $suppliers->registerSupplier($data);
+                    echo json_encode(['success' => true, 'supplier_id' => $supplier_id]);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(['error' => $e->getMessage()]);
+                }
+            }
+            break;
+            
+        case 'get':
+            if ($method === 'GET' && isset($_GET['id'])) {
+                $supplier = $suppliers->getSupplier($_GET['id']);
+                if ($supplier) {
+                    echo json_encode(['success' => true, 'data' => $supplier]);
+                } else {
+                    http_response_code(404);
+                    echo json_encode(['error' => 'Proveedor no encontrado']);
+                }
+            }
+            break;
+            
+        case 'qualifications':
+            if ($method === 'GET' && isset($_GET['supplier_id'])) {
+                $qualifications = $suppliers->getSupplierQualifications($_GET['supplier_id']);
+                echo json_encode(['success' => true, 'data' => $qualifications]);
+            } elseif ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                
+                try {
+                    $qualification_id = $suppliers->startQualificationProcess($data['supplier_id'], $data);
+                    echo json_encode(['success' => true, 'qualification_id' => $qualification_id]);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(['error' => $e->getMessage()]);
+                }
+            }
+            break;
+            
+        case 'evaluate':
+            if ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                
+                try {
+                    $score = $suppliers->performCriteriaEvaluation($data['qualification_id'], $data['evaluations']);
+                    echo json_encode(['success' => true, 'total_score' => $score]);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(['error' => $e->getMessage()]);
+                }
+            }
+            break;
+            
+        case 'complete_qualification':
+            if ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                
+                try {
+                    $result = $suppliers->completeQualification($data['qualification_id'], $data);
+                    echo json_encode(['success' => true, 'result' => $result]);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(['error' => $e->getMessage()]);
+                }
+            }
+            break;
+            
+        case 'audit':
+            if ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                
+                try {
+                    $audit_id = $suppliers->createSupplierAudit($data['supplier_id'], $data);
+                    echo json_encode(['success' => true, 'audit_id' => $audit_id]);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(['error' => $e->getMessage()]);
+                }
+            }
+            break;
+            
+        case 'audit_findings':
+            if ($method === 'POST') {
+                $data = json_decode(file_get_contents('php://input'), true);
+                
+                try {
+                    $suppliers->recordAuditFindings($data['audit_id'], $data['findings']);
+                    echo json_encode(['success' => true]);
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(['error' => $e->getMessage()]);
+                }
+            }
+            break;
+            
+        case 'metrics':
+            if ($method === 'GET') {
+                $filters = [
+                    'start_date' => $_GET['start_date'] ?? null,
+                    'end_date' => $_GET['end_date'] ?? null
+                ];
+                
+                $metrics = $suppliers->getSupplierMetrics($filters);
+                echo json_encode(['success' => true, 'data' => $metrics]);
+            }
+            break;
+            
+        case 'constants':
+            if ($method === 'GET') {
+                $constants = [
+                    'supplier_types' => SupplierAssessmentModule::SUPPLIER_TYPES,
+                    'gamp_categories' => SupplierAssessmentModule::GAMP_CATEGORIES,
+                    'qualification_status' => SupplierAssessmentModule::QUALIFICATION_STATUS,
+                    'risk_levels' => SupplierAssessmentModule::RISK_LEVELS,
+                    'audit_types' => SupplierAssessmentModule::AUDIT_TYPES,
+                    'evaluation_criteria' => SupplierAssessmentModule::EVALUATION_CRITERIA
+                ];
+                echo json_encode(['success' => true, 'data' => $constants]);
+            }
+            break;
+            
+        default:
+            http_response_code(400);
+            echo json_encode(['error' => 'Acción no válida']);
+            break;
+    }
 }
 ?>

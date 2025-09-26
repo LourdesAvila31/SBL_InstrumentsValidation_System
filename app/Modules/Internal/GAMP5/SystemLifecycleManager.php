@@ -9,8 +9,8 @@
  * 3. Verificación continua del proceso
  */
 
-require_once dirname(__DIR__, 2) . '/Core/db.php';
-require_once dirname(__DIR__, 2) . '/Core/permissions.php';
+require_once dirname(__DIR__, 3) . '/Core/db.php';
+require_once dirname(__DIR__, 3) . '/Core/permissions.php';
 
 class SystemLifecycleManager
 {

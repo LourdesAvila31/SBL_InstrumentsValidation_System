@@ -34,6 +34,29 @@ class DatabaseManager {
     }
 
     /**
+     * Obtiene una conexión PDO para sistemas que la requieren
+     */
+    public static function getPDOConnection() {
+        $host = self::envValue('DB_HOST', 'localhost');
+        $user = self::envValue('DB_USER', 'root');
+        $pass = self::envValue('DB_PASS', '', true);
+        $db   = self::envValue('DB_NAME', 'iso17025');
+
+        $dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
+        
+        try {
+            $pdo = new PDO($dsn, $user, $pass, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
+            ]);
+            return $pdo;
+        } catch (PDOException $e) {
+            throw new Exception('No se pudo conectar a la base de datos via PDO: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Inicializa la conexión asegurando el uso de MySQL.
      *
      * @throws Exception si no es posible conectarse a MySQL.
