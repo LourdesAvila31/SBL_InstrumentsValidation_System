@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function() {
+            var marker = '/public/';
+            var path = window.location.pathname || '';
+            var index = path.indexOf(marker);
+            var base = index !== -1 ? path.slice(0, index + marker.length) : '/';
+            if (!base.endsWith('/')) {
+                base += '/';
+            }
+            window.BASE_URL = base === '/' ? '' : base.replace(/\/$/, '');
+            document.write('<base href="' + base + '">');
+        })();
+    </script>
+    
+    <title>Configuración del Sistema | SBL Pharma</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/styles/master-theme.css">
+    <link rel="stylesheet" href="assets/styles/internal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+    
+    <style>
+        /* Responsive Design SBL */
+        @media (max-width: 600px) {
+            .sidebar { width: 100%; height: auto; position: relative; padding: 15px 0; }
+            .main-content { margin-left: 0; width: 100%; }
+            .dashboard-grid { grid-template-columns: 1fr; gap: 15px; }
+            .topbar { padding: 0 15px; }
+        }
+        @media (min-width: 601px) and (max-width: 900px) {
+            .sidebar { width: 200px; }
+            .main-content { margin-left: 200px; }
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (min-width: 901px) {
+            .sidebar { width: 200px; }
+            .main-content { margin-left: 200px; }
+            .dashboard-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/images/sbl-logo.png" alt="Logo SBL Pharma" class="logo"/>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li><a href="apps/internal/index.html"><i class="fa fa-home"></i> Dashboard</a></li>
+                <li><a href="apps/internal/configuracion/index.html" class="active"><i class="fa fa-cog"></i> Configuración</a></li>
+                <li><a href="apps/internal/configuracion/settings.html"><i class="fa fa-sliders-h"></i> Sistema</a></li>
+                <li><a href="apps/internal/configuracion/api_tokens.html"><i class="fa fa-key"></i> API Tokens</a></li>
+                <li><a href="apps/internal/configuracion/backup.html"><i class="fa fa-database"></i> Backup</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <i class="fa fa-bars menu-toggle" id="sidebarOpen"></i>
+                <span class="topbar-title">Configuración del Sistema</span>
+            </div>
+            <div class="topbar-icons">
+                <i class="fa fa-search" id="btnSearch"></i>
+                <i class="fa fa-bell" id="btnBell"></i>
+                <div class="topbar-user-box">
+                    <i class="fa fa-user-circle" id="btnUser"></i>
+                    <span class="topbar-user" id="userName">Administrador</span>
+                </div>
+            </div>
+        </div>
+
+        <section class="dashboard-section">
+            <div class="container-fluid">
+                <!-- Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4><i class="fa fa-cog"></i> Panel de Configuración</h4>
+                                <p class="mb-0">Administra la configuración general del sistema SBL Pharma</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration Grid -->
+                <div class="dashboard-grid">
+                    <div class="col">
+                        <button class="dashboard-btn" onclick="location.href='apps/internal/configuracion/settings.html'">
+                            <i class="fa fa-sliders-h fa-2x mb-2"></i>
+                            <h6>Configuración General</h6>
+                            <small>Parámetros del sistema</small>
+                        </button>
+                    </div>
+                    
+                    <div class="col">
+                        <button class="dashboard-btn" onclick="location.href='apps/internal/configuracion/api_tokens.html'">
+                            <i class="fa fa-key fa-2x mb-2"></i>
+                            <h6>Tokens de API</h6>
+                            <small>Gestión de acceso</small>
+                        </button>
+                    </div>
+                    
+                    <div class="col">
+                        <button class="dashboard-btn" onclick="location.href='apps/internal/configuracion/backup.html'">
+                            <i class="fa fa-database fa-2x mb-2"></i>
+                            <h6>Backup y Restauración</h6>
+                            <small>Copias de seguridad</small>
+                        </button>
+                    </div>
+                    
+                    <div class="col">
+                        <button class="dashboard-btn" onclick="location.href='apps/internal/configuracion/notifications.html'">
+                            <i class="fa fa-bell fa-2x mb-2"></i>
+                            <h6>Notificaciones</h6>
+                            <small>Alertas y avisos</small>
+                        </button>
+                    </div>
+                    
+                    <div class="col">
+                        <button class="dashboard-btn" onclick="location.href='apps/internal/configuracion/security.html'">
+                            <i class="fa fa-shield-alt fa-2x mb-2"></i>
+                            <h6>Seguridad</h6>
+                            <small>Políticas de acceso</small>
+                        </button>
+                    </div>
+                    
+                    <div class="col">
+                        <button class="dashboard-btn" onclick="location.href='apps/internal/configuracion/logs.html'">
+                            <i class="fa fa-file-alt fa-2x mb-2"></i>
+                            <h6>Logs del Sistema</h6>
+                            <small>Registro de actividades</small>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="row mt-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fa fa-info-circle"></i> Estado del Sistema</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="fa fa-server fa-2x text-success"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Servidor</h6>
+                                                <span class="badge bg-success">Operativo</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="fa fa-database fa-2x text-success"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Base de Datos</h6>
+                                                <span class="badge bg-success">Conectada</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="fa fa-cloud fa-2x text-warning"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Backup Automático</h6>
+                                                <span class="badge bg-warning">Programado</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="fa fa-shield-alt fa-2x text-success"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">Seguridad</h6>
+                                                <span class="badge bg-success">Activa</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fa fa-clock"></i> Última Actividad</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="timeline">
+                                    <div class="timeline-item">
+                                        <i class="fa fa-cog text-primary"></i>
+                                        <span>Configuración actualizada</span>
+                                        <small class="text-muted">hace 1 hora</small>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <i class="fa fa-database text-success"></i>
+                                        <span>Backup completado</span>
+                                        <small class="text-muted">hace 6 horas</small>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <i class="fa fa-user text-info"></i>
+                                        <span>Usuario admin conectado</span>
+                                        <small class="text-muted">hace 2 horas</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

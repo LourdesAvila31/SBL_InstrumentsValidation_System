@@ -102,65 +102,375 @@
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            background: #0d6efd;
+            background: #0d575a;
             border: 2px solid white;
-            box-shadow: 0 0 0 2px #0d6efd;
+            box-shadow: 0 0 0 2px #0d575a;
+        }
+
+        /* Estilos del panel administrativo responsivo */
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0;
+            width: 200px;
+            height: 100vh;
+            background: #0d575a;
+            color: #fff;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 30px;
+            box-shadow: 1px 0 6px #0002;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+        
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #0d575a;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .sidebar-logo img {
+            width: 140px;
+            margin-bottom: 22px;
+        }
+        
+        .sidebar-nav {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sidebar-nav .nav-link {
+            width: 92%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0 8px 0;
+            color: #cfd8dc;
+            text-decoration: none;
+            font-size: 1.08rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border-radius: 10px;
+            margin-bottom: 2px;
+            transition: background 0.2s, color 0.2s;
+            position: relative;
+        }
+        
+        .sidebar-nav .nav-link.active,
+        .sidebar-nav .nav-link:hover {
+            background: #0c8c98;
+            color: #fff;
+        }
+        
+        .sidebar-nav .nav-link i {
+            font-size: 1.85rem;
+            margin-bottom: 8px;
+        }
+        
+        .sidebar-nav .nav-link.active::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 16px;
+            width: 4px;
+            height: 32px;
+            background: #fff;
+            border-radius: 2px;
+        }
+        
+        .main-content {
+            margin-left: 200px;
+            min-height: 100vh;
+            padding: 0;
+            width: calc(100% - 200px);
+            transition: margin-left 0.3s ease, width 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: 0;
+            width: 100%;
+        }
+        
+        /* Media queries para responsividad */
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .topbar {
+                padding-left: 60px;
+            }
+            
+            .dashboard-metric {
+                margin-bottom: 15px;
+                padding: 15px;
+            }
+            
+            .ticket-card {
+                margin-bottom: 15px;
+            }
+            
+            .matrix-cell {
+                min-height: 40px;
+                font-size: 0.9em;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .topbar {
+                padding: 0 15px 0 50px;
+                font-size: 0.9em;
+            }
+            
+            .dashboard-metric {
+                padding: 12px;
+                text-align: center;
+            }
+            
+            .activity-timeline {
+                padding-left: 20px;
+            }
+            
+            .activity-timeline::before {
+                left: 10px;
+            }
+            
+            .activity-item::before {
+                left: -19px;
+                width: 8px;
+                height: 8px;
+            }
+        }
+        
+        .topbar {
+            background: #fff;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 34px 0 28px;
+            box-shadow: 0 1px 8px #0001;
+        }
+        
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 26px;
+        }
+        
+        .topbar-title {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #217b9b;
+            letter-spacing: 1px;
+        }
+        
+        .topbar-icons {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        
+        .topbar-icons i {
+            font-size: 1.2rem;
+            color: #217b9b;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        
+        .dashboard-section {
+            padding: 32px 28px;
+        }
+        
+        .dashboard-bar {
+            background: #0d575a;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            margin-bottom: 22px;
+            padding: 10px 18px;
+            letter-spacing: 0.5px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+        
+        .dashboard-grid.grid-5 {
+            grid-template-columns: repeat(5, 1fr);
+        }
+        
+        .dashboard-btn {
+            background: #0c8c98;
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            padding: 24px 12px 14px 12px;
+            min-width: 130px;
+            text-align: left;
+            font-size: 1.05rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            transition: background 0.18s, color 0.18s;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .dashboard-btn .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+            white-space: pre-line;
+        }
+        
+        .dashboard-btn .panel-value {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            word-break: break-word;
+        }
+        
+        .dashboard-btn:hover {
+            background: #217b9b;
+            color: #fff;
+        }
+        
+        .dashboard-btn .icon-btn {
+            font-size: 1.7rem;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        .dashboard-btn.thin-1,
+        .dashboard-btn.thin-2 {
+            width: 200px;
+            min-width: 0;
+            height: 100px;
+            min-height: 0;
+            padding: 10px 8px 14px 8px;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        
+        .dashboard-btn.sbl-skyblue {
+            background: #217b9b;
+        }
+        
+        .dashboard-btn.sbl-skyblue:hover {
+            background: #0d575a;
+        }
+        
+        /* Responsive para móviles */
+        @media (max-width: 900px) {
+            .main-content { margin-left: 0; width: 100%; }
+            .dashboard-section { padding: 18px 6px; }
+            .dashboard-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+            .dashboard-btn { padding: 20px 8px 12px 8px; font-size: 0.95rem; }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg" style="background-color: #0d575a;">
-        <div class="container-fluid">
-            <a class="navbar-brand text-white" href="#"><i class="fas fa-ticket-alt"></i> Sistema de Tickets GxP</a>
-            <div class="navbar-nav ms-auto">
-                <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user"></i> Usuario
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#" onclick="showProfile()"><i class="fas fa-user-circle"></i> Perfil</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
-                    </ul>
+    <!-- Botón toggle móvil -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+        <button class="sidebar-close" id="sidebarToggle"><i class="fa fa-times"></i></button>
+        <div class="sidebar-logo">
+            <img src="assets/images/sbl-logo.png" alt="Logo SBL Pharma" class="logo"/>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-link active" href="#" data-section="dashboard">
+                <i class="fa fa-tachometer-alt"></i>
+                <span>DASHBOARD</span>
+            </a>
+            <a class="nav-link" href="#" data-section="tickets">
+                <i class="fa fa-ticket-alt"></i>
+                <span>TICKETS</span>
+            </a>
+            <a class="nav-link" href="#" data-section="matrix">
+                <i class="fa fa-table"></i>
+                <span>MATRIZ RIESGO</span>
+            </a>
+            <a class="nav-link" href="#" data-section="reports">
+                <i class="fa fa-chart-bar"></i>
+                <span>REPORTES</span>
+            </a>
+            <a class="nav-link" href="#" data-section="config">
+                <i class="fa fa-cog"></i>
+                <span>CONFIGURACIÓN</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <i class="fa fa-bars menu-toggle" id="sidebarOpen"></i>
+                <span class="topbar-title">Sistema de Gestión de Tickets - GAMP 5 & GxP</span>
+            </div>
+            <div class="topbar-icons">
+                <i class="fa fa-search" id="btnSearch"></i>
+                <i class="fa fa-bell" id="btnBell"></i>
+                <div class="topbar-user-box">
+                    <i class="fa fa-user-circle" id="btnUser"></i>
+                    <span class="topbar-user" id="userName">Usuario</span>
+                    <div id="userMenu" class="dropdown-panel">
+                        <div class="menu-section-title">Mi perfil</div>
+                        <button class="btn-cerrar" onclick="logout()">Cerrar sesión</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </nav>
 
-    <div class="container-fluid mt-4">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-header">
-                        <h5><i class="fas fa-tachometer-alt"></i> Panel de Control</h5>
-                    </div>
-                    <div class="list-group list-group-flush">
-                        <a href="#" class="list-group-item list-group-item-action active" onclick="showDashboard()">
-                            <i class="fas fa-chart-pie"></i> Dashboard
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showCreateTicket()">
-                            <i class="fas fa-plus-circle"></i> Crear Ticket
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showTicketList()">
-                            <i class="fas fa-list"></i> Lista de Tickets
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showRiskMatrix()">
-                            <i class="fas fa-th"></i> Matriz de Riesgo
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showReports()">
-                            <i class="fas fa-chart-bar"></i> Reportes
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="showSettings()">
-                            <i class="fas fa-cog"></i> Configuración
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="col-md-9">
-                <!-- Dashboard View -->
-                <div id="dashboard-view">
+        <section class="dashboard-section">
+            <!-- Dashboard Principal -->
+            <div id="dashboard-view">
                     <div class="row">
                         <div class="col-md-12">
                             <h2><i class="fas fa-chart-pie"></i> Dashboard de Tickets</h2>
@@ -613,56 +923,53 @@
             const avgResolutionTime = stats.time_metrics.avg_resolution_time || 0;
             
             container.innerHTML = `
-                <div class="col-md-3">
-                    <div class="dashboard-metric">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h3>${totalTickets}</h3>
-                                <p class="mb-0">Total Tickets</p>
-                            </div>
-                            <div class="align-self-center">
-                                <i class="fas fa-ticket-alt fa-2x"></i>
-                            </div>
-                        </div>
+                <!-- Métricas de Tickets -->
+                <div class="dashboard-bar">Gestión de Tickets</div>
+                <div class="dashboard-grid grid-5">
+                    <div class="dashboard-btn" onclick="filterTickets('total')">
+                        <span class="panel-title">Total Tickets</span>
+                        <span class="panel-value">${totalTickets}</span>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="dashboard-metric" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h3>${criticalTickets}</h3>
-                                <p class="mb-0">Críticos</p>
-                            </div>
-                            <div class="align-self-center">
-                                <i class="fas fa-exclamation-triangle fa-2x"></i>
-                            </div>
-                        </div>
+                    <div class="dashboard-btn" onclick="filterTickets('abierto')">
+                        <span class="panel-title">Abiertos</span>
+                        <span class="panel-value">${stats.by_status['Abierto'] || 0}</span>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="dashboard-metric" style="background: linear-gradient(135deg, #2ed573 0%, #1e90ff 100%);">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h3>${resolvedTickets}</h3>
-                                <p class="mb-0">Resueltos</p>
-                            </div>
-                            <div class="align-self-center">
-                                <i class="fas fa-check-circle fa-2x"></i>
-                            </div>
-                        </div>
+                    <div class="dashboard-btn" onclick="filterTickets('en-progreso')">
+                        <span class="panel-title">En Progreso</span>
+                        <span class="panel-value">${stats.by_status['En Progreso'] || 0}</span>
                     </div>
+                    <div class="dashboard-btn" onclick="filterTickets('resuelto')">
+                        <span class="panel-title">Resueltos</span>
+                        <span class="panel-value">${resolvedTickets}</span>
+                    </div>
+                    <a href="#" class="dashboard-btn thin-1 sbl-skyblue" onclick="showCreateTicket()">
+                        <span class="panel-title">Nuevo Ticket</span>
+                        <span class="panel-value"><i class="fa fa-plus icon-btn"></i></span>
+                    </a>
                 </div>
-                <div class="col-md-3">
-                    <div class="dashboard-metric" style="background: linear-gradient(135deg, #ffa726 0%, #ff7043 100%);">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h3>${Math.round(avgResolutionTime)}h</h3>
-                                <p class="mb-0">Tiempo Promedio</p>
-                            </div>
-                            <div class="align-self-center">
-                                <i class="fas fa-clock fa-2x"></i>
-                            </div>
-                        </div>
+
+                <!-- Métricas de Riesgo y Tiempo -->
+                <div class="dashboard-bar">Análisis de Riesgo y Performance</div>
+                <div class="dashboard-grid grid-5">
+                    <div class="dashboard-btn" onclick="filterTickets('critico')">
+                        <span class="panel-title">Críticos</span>
+                        <span class="panel-value">${criticalTickets}</span>
+                    </div>
+                    <div class="dashboard-btn" onclick="filterTickets('escalado')">
+                        <span class="panel-title">Escalados</span>
+                        <span class="panel-value">${stats.by_status['Escalado'] || 0}</span>
+                    </div>
+                    <div class="dashboard-btn">
+                        <span class="panel-title">Tiempo Promedio</span>
+                        <span class="panel-value">${Math.round(avgResolutionTime)}h</span>
+                    </div>
+                    <div class="dashboard-btn" onclick="showSection('matrix')">
+                        <span class="panel-title">Matriz de Riesgo</span>
+                        <span class="panel-value"><i class="fa fa-table icon-btn"></i></span>
+                    </div>
+                    <div class="dashboard-btn" onclick="showReports()">
+                        <span class="panel-title">Reportes</span>
+                        <span class="panel-value"><i class="fa fa-chart-bar icon-btn"></i></span>
                     </div>
                 </div>
             `;
@@ -994,6 +1301,61 @@
                 window.location.href = '/logout.php';
             }
         }
+        
+        // Funcionalidad responsiva del sidebar
+        function initResponsiveSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mainContent = document.querySelector('.main-content');
+            
+            // Toggle del sidebar
+            function toggleSidebar() {
+                sidebar.classList.toggle('show');
+                sidebar.classList.toggle('hidden');
+                
+                if (window.innerWidth <= 768) {
+                    mainContent.classList.toggle('expanded');
+                }
+            }
+            
+            // Event listeners
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', toggleSidebar);
+            }
+            
+            // Cerrar sidebar al hacer click fuera en móvil
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768) {
+                    if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                        sidebar.classList.remove('show');
+                        sidebar.classList.add('hidden');
+                        mainContent.classList.add('expanded');
+                    }
+                }
+            });
+            
+            // Ajustar en resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('show', 'hidden');
+                    mainContent.classList.remove('expanded');
+                } else {
+                    sidebar.classList.add('hidden');
+                    mainContent.classList.add('expanded');
+                }
+            });
+            
+            // Inicializar estado
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('hidden');
+                mainContent.classList.add('expanded');
+            }
+        }
+        
+        // Inicializar responsividad cuando carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            initResponsiveSidebar();
+        });
     </script>
 </body>
 </html>

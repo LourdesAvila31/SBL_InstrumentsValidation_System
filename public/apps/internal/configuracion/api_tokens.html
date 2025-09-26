@@ -20,6 +20,7 @@
     <title>Tokens de API | SBL Pharma</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/styles/master-theme.css">
     <link rel="stylesheet" href="assets/styles/internal.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
@@ -465,39 +466,15 @@
     </style>
 </head>
 <body>
+    <!-- SIDEBAR -->
     <aside id="sidebar" class="sidebar">
-    <!-- SIDEBAR CONTENT -->
-    <style>
-        .sidebar-nav {
-            gap: 12px;
-        }
-    
-        .sidebar-nav .nav-link {
-            width: 90%;
-            padding: 16px 0 10px 0;
-            font-size: 1.02rem;
-            letter-spacing: 0.5px;
-        }
-    
-        .sidebar-nav .nav-link i {
-            font-size: 1.7rem;
-            margin-bottom: 6px;
-        }
-    
-        @media (max-width: 900px) {
-            .sidebar-nav .nav-link {
-                width: 92%;
-            }
-        }
-    </style>
-    <button class="sidebar-close" id="sidebarToggle"><i class="fa fa-times"></i></button>
-    <div class="sidebar-logo">
-        <img src="assets/images/sbl-logo.png" alt="Logo SBL Pharma" class="logo"/>
-    </div>
-    <nav class="sidebar-nav">
-        <a class="nav-link" href="apps/internal/index.html" data-section="menu">
-            <i class="fa fa-tachometer-alt"></i>
-            <span>MENÚ</span>
+        <div class="sidebar-logo">
+            <img src="assets/images/sbl-logo.png" alt="Logo SBL Pharma" class="logo"/>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-link" href="apps/internal/index.html" data-section="menu">
+                <i class="fa fa-tachometer-alt"></i>
+                <span>MENÚ</span>
         </a>
         <a class="nav-link" href="apps/internal/instrumentos/list_gages.html" data-section="instrumentos">
             <i class="fa fa-boxes-stacked"></i>
@@ -530,10 +507,12 @@
     </nav>
     </aside>
 
+    <!-- CONTENIDO PRINCIPAL -->
     <div class="main-content">
+        <!-- Topbar -->
         <div class="topbar">
             <div class="topbar-left">
-                <button class="mobile-toggle" id="sidebarOpen"><i class="fa fa-bars"></i></button>
+                <i class="fa fa-bars menu-toggle" id="sidebarOpen"></i>
                 <span class="topbar-title">Tokens de API</span>
             </div>
             <div class="topbar-icons">
@@ -541,7 +520,87 @@
                 <i class="fa fa-bell" id="btnBell"></i>
                 <div class="topbar-user-box">
                     <i class="fa fa-user-circle" id="btnUser"></i>
-                    <span class="topbar-user" id="userName"></span>
+                    <span class="topbar-user" id="userName">Usuario</span>
+                    <div id="userMenu" class="dropdown-panel" style="display: none;">
+                        <div class="menu-section-title">Mi perfil</div>
+                        <div id="menuNombre">Nombre: Usuario</div>
+                        <div id="menuRol">Rol: Admin</div>
+                        <button class="btn-perfil">Mi información</button>
+                        <button class="btn-cerrar">Cerrar sesión</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="dashboard-section">
+            <!-- Header con descripción -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4><i class="fa fa-key text-primary"></i> Gestión de tokens de API</h4>
+                            <p class="text-muted mb-0">Administra credenciales de acceso programático y rota llaves comprometidas cuando sea necesario.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerta de error del servidor -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fa fa-exclamation-triangle"></i>
+                        <strong>Respuesta inválida del servidor.</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel de tokens registrados -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fa fa-list"></i> Tokens registrados
+                                <small class="text-muted">Tokens activos: <span id="activeTokenCount">0</span></small>
+                            </h5>
+                            <div>
+                                <button class="btn btn-outline-secondary btn-sm me-2" id="refreshTokens">
+                                    <i class="fa fa-sync-alt"></i> Actualizar
+                                </button>
+                                <button class="btn btn-primary btn-sm" id="createNewToken">
+                                    <i class="fa fa-plus"></i> Nuevo token
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>NOMBRE</th>
+                                            <th>TOKEN</th>
+                                            <th>CREADO</th>
+                                            <th>ÚLTIMO USO</th>
+                                            <th>ESTADO</th>
+                                            <th>ACCIONES</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tokensTableBody">
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4">
+                                                <i class="fa fa-key text-muted fa-3x mb-3"></i>
+                                                <p class="text-muted mb-0">No hay tokens registrados aún.</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
                     <div id="userMenu" class="dropdown-panel">
                         <div class="menu-section-title">Mi perfil</div>
                         <div id="menuNombre"></div>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function() {
+            var marker = '/public/';
+            var path = window.location.pathname || '';
+            var index = path.indexOf(marker);
+            var base = index !== -1 ? path.slice(0, index + marker.length) : '/';
+            if (!base.endsWith('/')) {
+                base += '/';
+            }
+            window.BASE_URL = base === '/' ? '' : base.replace(/\/$/, '');
+            document.write('<base href="' + base + '">');
+        })();
+    </script>
+    
+    <title>Gestión de Auditorías | SBL Pharma</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    
+    <!-- DEPENDENCIAS OBLIGATORIAS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/styles/master-theme.css">
+    <link rel="stylesheet" href="assets/styles/internal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+    
+    <style>
+        body {
+            background: #f4f6f8;
+            font-family: 'Montserrat', Arial, sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        
+        /* Responsive Design SBL */
+        @media (max-width: 600px) {
+            .sidebar { 
+                width: 100%; 
+                height: auto; 
+                position: relative; 
+                padding: 15px 0;
+            }
+            .main-content { 
+                margin-left: 0; 
+                width: 100%; 
+            }
+            .dashboard-grid { 
+                grid-template-columns: 1fr; 
+                gap: 15px;
+            }
+            .topbar {
+                padding: 0 15px;
+            }
+            .sidebar-toggle {
+                display: block !important;
+            }
+        }
+
+        @media (min-width: 601px) and (max-width: 900px) {
+            .sidebar { 
+                width: 200px; 
+            }
+            .main-content { 
+                margin-left: 200px; 
+            }
+            .dashboard-grid { 
+                grid-template-columns: repeat(2, 1fr); 
+            }
+        }
+
+        @media (min-width: 901px) {
+            .sidebar { 
+                width: 200px; 
+            }
+            .main-content { 
+                margin-left: 200px; 
+            }
+            .dashboard-grid { 
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            }
+        }
+        
+        .sidebar-toggle {
+            display: none;
+            background: var(--sbl-primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/images/sbl-logo.png" alt="Logo SBL Pharma" class="logo"/>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li><a href="apps/internal/index.html"><i class="fa fa-home"></i> Dashboard</a></li>
+                <li><a href="apps/internal/auditoria/index.html" class="active"><i class="fa fa-search"></i> Auditorías</a></li>
+                <li><a href="apps/internal/auditoria/list_audit_trail.html"><i class="fa fa-list"></i> Seguimiento</a></li>
+                <li><a href="apps/internal/auditoria/reports.html"><i class="fa fa-chart-line"></i> Reportes</a></li>
+                <li><a href="apps/internal/auditoria/settings.html"><i class="fa fa-cog"></i> Configuración</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content">
+        <button class="sidebar-toggle" id="sidebarToggle">
+            <i class="fa fa-bars"></i>
+        </button>
+        
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <i class="fa fa-bars menu-toggle" id="sidebarOpen"></i>
+                <span class="topbar-title">Gestión de Auditorías</span>
+            </div>
+            <div class="topbar-icons">
+                <i class="fa fa-search" id="btnSearch"></i>
+                <i class="fa fa-bell" id="btnBell"></i>
+                <div class="topbar-user-box">
+                    <i class="fa fa-user-circle" id="btnUser"></i>
+                    <span class="topbar-user" id="userName">Administrador</span>
+                    <div id="userMenu" class="dropdown-panel">
+                        <a href="apps/internal/usuarios/my_information.html">Mi Información</a>
+                        <a href="apps/internal/usuarios/login.html">Cerrar Sesión</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="dashboard-section">
+            <div class="container-fluid">
+                <!-- Dashboard Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4><i class="fa fa-search"></i> Sistema de Auditorías ISO 17025</h4>
+                                <p class="mb-0">Gestión integral de auditorías y seguimiento de cumplimiento normativo</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Grid -->
+                <div class="dashboard-grid">
+                    <div class="col">
+                        <button class="dashboard-btn" onclick="location.href='apps/internal/auditoria/list_audit_trail.html'">
+                            <i class="fa fa-list-alt fa-2x mb-2"></i>
+                            <h6>Seguimiento de Auditorías</h6>
+                            <small>Historial detallado</small>
+                        </button>
+                    </div>
+                    
+                    <div class="col">
+                        <button class="dashboard-btn" onclick="location.href='apps/internal/auditoria/schedule.html'">
+                            <i class="fa fa-calendar fa-2x mb-2"></i>
+                            <h6>Programar Auditoría</h6>
+                            <small>Nuevas auditorías</small>
+                        </button>
+                    </div>
+                    
+                    <div class="col">
+                        <button class="dashboard-btn" onclick="location.href='apps/internal/auditoria/reports.html'">
+                            <i class="fa fa-chart-bar fa-2x mb-2"></i>
+                            <h6>Reportes</h6>
+                            <small>Análisis y métricas</small>
+                        </button>
+                    </div>
+                    
+                    <div class="col">
+                        <button class="dashboard-btn" onclick="location.href='apps/internal/auditoria/compliance.html'">
+                            <i class="fa fa-shield-alt fa-2x mb-2"></i>
+                            <h6>Cumplimiento</h6>
+                            <small>Estado normativo</small>
+                        </button>
+                    </div>
+                    
+                    <div class="col">
+                        <button class="dashboard-btn" onclick="location.href='apps/internal/auditoria/documents.html'">
+                            <i class="fa fa-file-alt fa-2x mb-2"></i>
+                            <h6>Documentos</h6>
+                            <small>Gestión documental</small>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fa fa-clock"></i> Actividad Reciente</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="timeline">
+                                    <div class="timeline-item">
+                                        <i class="fa fa-search text-primary"></i>
+                                        <span>Auditoría programada para mañana</span>
+                                        <small class="text-muted">hace 2 horas</small>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <i class="fa fa-check text-success"></i>
+                                        <span>Reporte de cumplimiento completado</span>
+                                        <small class="text-muted">hace 1 día</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fa fa-exclamation-triangle"></i> Alertas Activas</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <i class="fa fa-info-circle"></i> No hay alertas pendientes
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Responsive sidebar toggle
+        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+        
+        document.getElementById('sidebarOpen')?.addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+
+        // User menu toggle
+        document.getElementById('btnUser')?.addEventListener('click', function() {
+            document.getElementById('userMenu').classList.toggle('show');
+        });
+    </script>
+</body>
+</html>

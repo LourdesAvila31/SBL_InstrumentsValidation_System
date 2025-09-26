@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function() {
+            var marker = '/public/';
+            var path = window.location.pathname || '';
+            var index = path.indexOf(marker);
+            var base = index !== -1 ? path.slice(0, index + marker.length) : '/';
+            if (!base.endsWith('/')) {
+                base += '/';
+            }
+            window.BASE_URL = base === '/' ? '' : base.replace(/\/$/, '');
+            document.write('<base href="' + base + '">');
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes de Tickets - Sistema GAMP 5 & GxP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/styles/master-theme.css">
+    <style>
+        .report-card {
+            background: linear-gradient(135deg, var(--sbl-primary) 0%, var(--sbl-secondary) 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .report-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(13, 87, 90, 0.3);
+        }
+        
+        .report-card .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .metric-card .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--sbl-primary);
+            margin-bottom: 5px;
+        }
+        
+        .metric-card .metric-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .report-card {
+                text-align: center;
+                padding: 20px;
+            }
+            
+            .chart-container {
+                padding: 15px;
+            }
+            
+            .filter-section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Botón toggle móvil -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/images/sbl-logo.png" alt="Logo SBL Pharma" class="logo"/>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-link" href="index.html">
+                <i class="fa fa-tachometer-alt"></i>
+                <span>DASHBOARD</span>
+            </a>
+            <a class="nav-link" href="tickets.html">
+                <i class="fa fa-ticket-alt"></i>
+                <span>TICKETS</span>
+            </a>
+            <a class="nav-link" href="matrix.html">
+                <i class="fa fa-table"></i>
+                <span>MATRIZ RIESGO</span>
+            </a>
+            <a class="nav-link active" href="reports.html">
+                <i class="fa fa-chart-bar"></i>
+                <span>REPORTES</span>
+            </a>
+            <a class="nav-link" href="settings.html">
+                <i class="fa fa-cog"></i>
+                <span>CONFIGURACIÓN</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <span class="topbar-title">Reportes de Tickets - GAMP 5 & GxP</span>
+            </div>
+            <div class="topbar-icons">
+                <i class="fas fa-bell" title="Notificaciones"></i>
+                <i class="fas fa-user-circle" title="Perfil" onclick="showProfile()"></i>
+                <i class="fas fa-sign-out-alt" title="Cerrar Sesión" onclick="logout()"></i>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div class="dashboard-section">
+            <div class="dashboard-bar">
+                <i class="fas fa-chart-bar me-2"></i>
+                REPORTES Y ANÁLISIS DE TICKETS
+            </div>
+
+            <!-- Filtros de Reportes -->
+            <div class="filter-section">
+                <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filtros de Reporte</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label">Período</label>
+                        <select class="form-select" id="period-filter">
+                            <option value="7">Últimos 7 días</option>
+                            <option value="30" selected>Últimos 30 días</option>
+                            <option value="90">Últimos 90 días</option>
+                            <option value="365">Último año</option>
+                            <option value="custom">Personalizado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" id="status-filter">
+                            <option value="">Todos los estados</option>
+                            <option value="ABIERTO">Abierto</option>
+                            <option value="EN_PROGRESO">En Progreso</option>
+                            <option value="EN_REVISION">En Revisión</option>
+                            <option value="RESUELTO">Resuelto</option>
+                            <option value="CERRADO">Cerrado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Nivel de Riesgo</label>
+                        <select class="form-select" id="risk-filter">
+                            <option value="">Todos los niveles</option>
+                            <option value="CRITICO">Crítico</option>
+                            <option value="ALTO">Alto</option>
+                            <option value="MEDIO">Medio</option>
+                            <option value="BAJO">Bajo</option>
+                            <option value="MINIMO">Mínimo</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-primary me-2" onclick="generateReport()">
+                            <i class="fas fa-chart-line me-1"></i>Generar
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="exportReport()">
+                            <i class="fas fa-download me-1"></i>Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Métricas Principales -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-value" id="total-tickets">0</div>
+                        <div class="metric-label">Total Tickets</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-value" id="avg-resolution">0h</div>
+                        <div class="metric-label">Tiempo Promedio</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-value" id="critical-tickets">0</div>
+                        <div class="metric-label">Críticos</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-value" id="satisfaction-rate">0%</div>
+                        <div class="metric-label">Satisfacción</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos de Reportes -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <h5 class="mb-3"><i class="fas fa-chart-pie me-2"></i>Distribución por Estado</h5>
+                        <canvas id="statusChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <h5 class="mb-3"><i class="fas fa-chart-bar me-2"></i>Tickets por Nivel de Riesgo</h5>
+                        <canvas id="riskChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="chart-container">
+                        <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i>Tendencia de Tickets</h5>
+                        <canvas id="trendChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-container">
+                        <h5 class="mb-3"><i class="fas fa-stopwatch me-2"></i>Tiempo de Resolución</h5>
+                        <div id="resolution-stats">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Promedio:</span>
+                                <strong id="avg-time">0h</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Mínimo:</span>
+                                <strong id="min-time">0h</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Máximo:</span>
+                                <strong id="max-time">0h</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Mediana:</span>
+                                <strong id="median-time">0h</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reportes Rápidos -->
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="report-card" onclick="generateQuickReport('efficiency')">
+                        <div class="card-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <h4>Reporte de Eficiencia</h4>
+                        <p>Análisis de productividad y tiempos de respuesta del equipo</p>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="report-card" onclick="generateQuickReport('compliance')">
+                        <div class="card-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>Reporte de Cumplimiento</h4>
+                        <p>Verificación de adherencia a protocolos GAMP 5 y GxP</p>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="report-card" onclick="generateQuickReport('risk')">
+                        <div class="card-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h4>Análisis de Riesgo</h4>
+                        <p>Evaluación de patrones de riesgo y áreas críticas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Variables globales
+        let statusChart, riskChart, trendChart;
+        
+        // Inicializar cuando carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            initResponsiveSidebar();
+            initCharts();
+            loadReportData();
+        });
+        
+        // Funcionalidad responsiva del sidebar
+        function initResponsiveSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mainContent = document.querySelector('.main-content');
+            
+            function toggleSidebar() {
+                sidebar.classList.toggle('show');
+                sidebar.classList.toggle('hidden');
+                
+                if (window.innerWidth <= 768) {
+                    mainContent.classList.toggle('expanded');
+                }
+            }
+            
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', toggleSidebar);
+            }
+            
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768) {
+                    if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                        sidebar.classList.remove('show');
+                        sidebar.classList.add('hidden');
+                        mainContent.classList.add('expanded');
+                    }
+                }
+            });
+            
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('show', 'hidden');
+                    mainContent.classList.remove('expanded');
+                } else {
+                    sidebar.classList.add('hidden');
+                    mainContent.classList.add('expanded');
+                }
+            });
+            
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('hidden');
+                mainContent.classList.add('expanded');
+            }
+        }
+        
+        // Inicializar gráficos
+        function initCharts() {
+            // Gráfico de distribución por estado
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            statusChart = new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Abierto', 'En Progreso', 'En Revisión', 'Resuelto', 'Cerrado'],
+                    datasets: [{
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            '#0d6efd',
+                            '#fd7e14',
+                            '#6610f2',
+                            '#198754',
+                            '#6c757d'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // Gráfico de nivel de riesgo
+            const riskCtx = document.getElementById('riskChart').getContext('2d');
+            riskChart = new Chart(riskCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Crítico', 'Alto', 'Medio', 'Bajo', 'Mínimo'],
+                    datasets: [{
+                        label: 'Cantidad de Tickets',
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            '#dc3545',
+                            '#fd7e14',
+                            '#ffc107',
+                            '#20c997',
+                            '#6c757d'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de tendencia
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Tickets Creados',
+                        data: [],
+                        borderColor: '#0d575a',
+                        backgroundColor: 'rgba(13, 87, 90, 0.1)',
+                        fill: true
+                    }, {
+                        label: 'Tickets Resueltos',
+                        data: [],
+                        borderColor: '#198754',
+                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Cargar datos del reporte
+        async function loadReportData() {
+            try {
+                // Aquí iría la llamada real a la API
+                // const response = await fetch('/app/Modules/Internal/TicketSystem/ReportController.php');
+                
+                // Datos simulados para demostración
+                const mockData = {
+                    totalTickets: 156,
+                    avgResolution: '4.5h',
+                    criticalTickets: 12,
+                    satisfactionRate: '94.2%',
+                    statusDistribution: [23, 45, 18, 52, 18],
+                    riskDistribution: [12, 28, 65, 41, 10],
+                    trend: {
+                        labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+                        created: [32, 28, 45, 38],
+                        resolved: [28, 31, 42, 35]
+                    },
+                    resolutionTimes: {
+                        avg: '4.5h',
+                        min: '0.5h',
+                        max: '24h',
+                        median: '3.2h'
+                    }
+                };
+                
+                updateMetrics(mockData);
+                updateCharts(mockData);
+                
+            } catch (error) {
+                console.error('Error cargando datos del reporte:', error);
+                showNotification('Error cargando datos del reporte', 'error');
+            }
+        }
+        
+        // Actualizar métricas
+        function updateMetrics(data) {
+            document.getElementById('total-tickets').textContent = data.totalTickets;
+            document.getElementById('avg-resolution').textContent = data.avgResolution;
+            document.getElementById('critical-tickets').textContent = data.criticalTickets;
+            document.getElementById('satisfaction-rate').textContent = data.satisfactionRate;
+            
+            document.getElementById('avg-time').textContent = data.resolutionTimes.avg;
+            document.getElementById('min-time').textContent = data.resolutionTimes.min;
+            document.getElementById('max-time').textContent = data.resolutionTimes.max;
+            document.getElementById('median-time').textContent = data.resolutionTimes.median;
+        }
+        
+        // Actualizar gráficos
+        function updateCharts(data) {
+            statusChart.data.datasets[0].data = data.statusDistribution;
+            statusChart.update();
+            
+            riskChart.data.datasets[0].data = data.riskDistribution;
+            riskChart.update();
+            
+            trendChart.data.labels = data.trend.labels;
+            trendChart.data.datasets[0].data = data.trend.created;
+            trendChart.data.datasets[1].data = data.trend.resolved;
+            trendChart.update();
+        }
+        
+        // Generar reporte
+        function generateReport() {
+            const period = document.getElementById('period-filter').value;
+            const status = document.getElementById('status-filter').value;
+            const risk = document.getElementById('risk-filter').value;
+            
+            showNotification('Generando reporte...', 'info');
+            
+            // Aquí iría la lógica para generar el reporte con los filtros
+            setTimeout(() => {
+                loadReportData();
+                showNotification('Reporte generado exitosamente', 'success');
+            }, 1500);
+        }
+        
+        // Exportar reporte
+        function exportReport() {
+            showNotification('Preparando exportación...', 'info');
+            
+            // Aquí iría la lógica para exportar el reporte
+            setTimeout(() => {
+                showNotification('Reporte exportado exitosamente', 'success');
+            }, 2000);
+        }
+        
+        // Generar reporte rápido
+        function generateQuickReport(type) {
+            const reportTypes = {
+                'efficiency': 'Reporte de Eficiencia',
+                'compliance': 'Reporte de Cumplimiento',
+                'risk': 'Análisis de Riesgo'
+            };
+            
+            showNotification(`Generando ${reportTypes[type]}...`, 'info');
+            
+            setTimeout(() => {
+                showNotification(`${reportTypes[type]} generado exitosamente`, 'success');
+            }, 2000);
+        }
+        
+        // Mostrar notificaciones
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
+        }
+        
+        // Funciones adicionales
+        function showProfile() {
+            showNotification('Perfil de usuario en desarrollo', 'info');
+        }
+        
+        function logout() {
+            if (confirm('¿Está seguro que desea cerrar sesión?')) {
+                window.location.href = '/logout.php';
+            }
+        }
+    </script>
+</body>
+</html>

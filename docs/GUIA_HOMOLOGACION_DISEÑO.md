@@ -1,8 +1,22 @@
-# Guía de Homologación del Diseño - Sistema SBL Pharma
+# GUÍA DE HOMOLOGACIÓN DE DISEÑO SBL
+## Sistema ISO 17025 - Estándares Visuales Corporativos
 
-## 📋 Resumen
+### Fecha: 25 de Septiembre 2025
+### Versión: 2.0 (Actualizada con correcciones visuales)
 
-Esta guía establece los estándares de diseño homologado para todos los archivos HTML del sistema SBL Pharma, cumpliendo con las normativas ISO 17025/NOM-059.
+---
+
+## 📋 RESUMEN EJECUTIVO
+
+Esta guía establece los estándares obligatorios de diseño homologado para todos los archivos HTML del sistema SBL Pharma, garantizando consistencia visual, experiencia de usuario coherente y cumplimiento normativo ISO 17025/NOM-059.
+
+## 🎯 OBJETIVOS DE HOMOLOGACIÓN
+
+1. **Consistencia Visual**: Todos los archivos HTML deben seguir la misma estructura
+2. **Experiencia de Usuario**: Navegación intuitiva y familiar
+3. **Responsive Design**: Adaptabilidad móvil y tablet
+4. **Cumplimiento Normativo**: Estándares ISO 17025 y NOM-059
+5. **Mantenibilidad**: Código limpio y reutilizable
 
 ## 🎨 Paleta de Colores Estándar
 
@@ -76,9 +90,97 @@ En el archivo `master-theme.css` están disponibles las siguientes variables:
 }
 ```
 
-### 3. Componentes Estándar
+## 📐 ESTRUCTURA ESTÁNDAR OBLIGATORIA
 
-#### Sidebar
+### HTML Base Template
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function() {
+            var marker = '/public/';
+            var path = window.location.pathname || '';
+            var index = path.indexOf(marker);
+            var base = index !== -1 ? path.slice(0, index + marker.length) : '/';
+            if (!base.endsWith('/')) {
+                base += '/';
+            }
+            window.BASE_URL = base === '/' ? '' : base.replace(/\/$/, '');
+            document.write('<base href="' + base + '">');
+        })();
+    </script>
+    <!-- Rutas relativizadas para cumplir ISO 17025/NOM-059 -->
+    
+    <title>Título de la Página | SBL Pharma</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    
+    <!-- DEPENDENCIAS OBLIGATORIAS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/styles/internal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+</head>
+```
+
+### Estructura Body Obligatoria
+```html
+<body>
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/images/sbl-logo.png" alt="Logo SBL Pharma" class="logo"/>
+        </div>
+        <nav class="sidebar-nav">
+            <!-- Navigation links -->
+        </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <i class="fa fa-bars menu-toggle" id="sidebarOpen"></i>
+                <span class="topbar-title">Título de la Sección</span>
+            </div>
+            <div class="topbar-icons">
+                <i class="fa fa-search" id="btnSearch"></i>
+                <i class="fa fa-bell" id="btnBell"></i>
+                <div class="topbar-user-box">
+                    <i class="fa fa-user-circle" id="btnUser"></i>
+                    <span class="topbar-user" id="userName">Usuario</span>
+                    <div id="userMenu" class="dropdown-panel">
+                        <!-- User menu content -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="dashboard-section">
+            <!-- Dashboard content -->
+        </section>
+    </div>
+</body>
+```
+
+## 🧩 COMPONENTES ESTÁNDAR
+
+### 1. Sidebar (200px ancho fijo)
+```css
+.sidebar {
+    position: fixed;
+    left: 0; top: 0;
+    width: 200px;
+    height: 100vh;
+    background: #0d575a;
+    color: #fff;
+    z-index: 100;
+}
+```
+
+### 2. Sidebar - Estructura HTML
 ```html
 <div class="sidebar">
     <div class="sidebar-logo">

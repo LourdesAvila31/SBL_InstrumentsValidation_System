@@ -157,11 +157,269 @@
             border-left-color: #dc3545;
             background: #fff8f8;
         }
+
+        /* Estilos del panel administrativo */
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0;
+            width: 200px;
+            height: 100vh;
+            background: #0d575a;
+            color: #fff;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 30px;
+            box-shadow: 1px 0 6px #0002;
+        }
+        .sidebar-logo img {
+            width: 140px;
+            margin-bottom: 22px;
+        }
+        .sidebar-nav {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-nav .nav-link {
+            width: 92%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0 8px 0;
+            color: #cfd8dc;
+            text-decoration: none;
+            font-size: 1.08rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border-radius: 10px;
+            margin-bottom: 2px;
+            transition: background 0.2s, color 0.2s;
+            position: relative;
+        }
+        .sidebar-nav .nav-link.active,
+        .sidebar-nav .nav-link:hover {
+            background: #0c8c98;
+            color: #fff;
+        }
+        .sidebar-nav .nav-link i {
+            font-size: 1.85rem;
+            margin-bottom: 8px;
+        }
+        .sidebar-nav .nav-link.active::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 16px;
+            width: 4px;
+            height: 32px;
+            background: #fff;
+            border-radius: 2px;
+        }
+        .main-content {
+            margin-left: 200px;
+            min-height: 100vh;
+            padding: 0;
+            width: calc(100% - 200px);
+        }
+        .topbar {
+            background: #fff;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 34px 0 28px;
+            box-shadow: 0 1px 8px #0001;
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 26px;
+        }
+        .topbar-title {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #217b9b;
+            letter-spacing: 1px;
+        }
+        .topbar-icons {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .topbar-icons i {
+            font-size: 1.2rem;
+            color: #217b9b;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .dashboard-section {
+            padding: 32px 28px;
+        }
+        .dashboard-bar {
+            background: #0d575a;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            margin-bottom: 22px;
+            padding: 10px 18px;
+            letter-spacing: 0.5px;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+        .dashboard-grid.grid-5 {
+            grid-template-columns: repeat(5, 1fr);
+        }
+        .dashboard-btn {
+            background: #0c8c98;
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            padding: 24px 12px 14px 12px;
+            min-width: 130px;
+            text-align: left;
+            font-size: 1.05rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            transition: background 0.18s, color 0.18s;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .dashboard-btn .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+            white-space: pre-line;
+        }
+        .dashboard-btn .panel-value {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            word-break: break-word;
+        }
+        .dashboard-btn:hover {
+            background: #217b9b;
+            color: #fff;
+        }
+        .dashboard-btn .icon-btn {
+            font-size: 1.7rem;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        /* Responsive Design SBL */
+        @media (max-width: 600px) {
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .main-content { margin-left: 0; width: 100%; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+        @media (min-width: 601px) and (max-width: 900px) {
+            .sidebar { width: 200px; }
+            .main-content { margin-left: 200px; }
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+        }
     </style>
 </head>
 <body>
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+        <button class="sidebar-close" id="sidebarToggle"><i class="fa fa-times"></i></button>
+        <div class="sidebar-logo">
+            <img src="assets/images/sbl-logo.png" alt="Logo SBL Pharma" class="logo"/>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-link active" href="#" data-section="dashboard">
+                <i class="fa fa-tachometer-alt"></i>
+                <span>DASHBOARD</span>
+            </a>
+            <a class="nav-link" href="#" data-section="planning">
+                <i class="fa fa-clipboard-list"></i>
+                <span>PLANIFICACIÓN</span>
+            </a>
+            <a class="nav-link" href="#" data-section="migration">
+                <i class="fa fa-exchange-alt"></i>
+                <span>MIGRACIÓN</span>
+            </a>
+            <a class="nav-link" href="#" data-section="destruction">
+                <i class="fa fa-trash-alt"></i>
+                <span>DESTRUCCIÓN</span>
+            </a>
+            <a class="nav-link" href="#" data-section="verification">
+                <i class="fa fa-check-circle"></i>
+                <span>VERIFICACIÓN</span>
+            </a>
+            <a class="nav-link" href="#" data-section="reports">
+                <i class="fa fa-chart-bar"></i>
+                <span>REPORTES</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <i class="fa fa-bars menu-toggle" id="sidebarOpen"></i>
+                <span class="topbar-title">Sistema de Retiro Computarizado - GAMP 5</span>
+            </div>
+            <div class="topbar-icons">
+                <i class="fa fa-download" onclick="exportProgress()" title="Exportar"></i>
+                <i class="fa fa-question-circle" onclick="showHelp()" title="Ayuda"></i>
+                <i class="fa fa-search" id="btnSearch"></i>
+                <i class="fa fa-bell" id="btnBell"></i>
+                <div class="topbar-user-box">
+                    <i class="fa fa-user-circle" id="btnUser"></i>
+                    <span class="topbar-user" id="userName">Usuario</span>
+                    <div id="userMenu" class="dropdown-panel">
+                        <div class="menu-section-title">Mi perfil</div>
+                        <button class="btn-perfil">Mi información</button>
+                        <button class="btn-cerrar">Cerrar sesión</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="dashboard-section">
+            <!-- Dashboard del Sistema de Retiro -->
+            <div class="dashboard-bar">Estado del Proceso de Retiro</div>
+            <div class="dashboard-grid grid-5">
+                <div class="dashboard-btn" onclick="showSection('planning')">
+                    <span class="panel-title">Planificación</span>
+                    <span class="panel-value" id="planning-status">0%</span>
+                </div>
+                <div class="dashboard-btn" onclick="showSection('migration')">
+                    <span class="panel-title">Migración</span>
+                    <span class="panel-value" id="migration-status">0%</span>
+                </div>
+                <div class="dashboard-btn" onclick="showSection('destruction')">
+                    <span class="panel-title">Destrucción</span>
+                    <span class="panel-value" id="destruction-status">0%</span>
+                </div>
+                <div class="dashboard-btn" onclick="showSection('verification')">
+                    <span class="panel-title">Verificación</span>
+                    <span class="panel-value" id="verification-status">0%</span>
+                </div>
+                <div class="dashboard-btn" onclick="showSection('reports')">
+                    <span class="panel-title">Reportes</span>
+                    <span class="panel-value"><i class="fa fa-chart-bar icon-btn"></i></span>
+                </div>
+            </div>
+
     <!-- Header -->
-    <header class="retirement-header">
+    <header class="retirement-header" style="display: none;">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">

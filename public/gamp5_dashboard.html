@@ -2,52 +2,251 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAMP 5 - Sistema de Administración</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        (function() {
+            var marker = '/public/';
+            var path = window.location.pathname || '';
+            var index = path.indexOf(marker);
+            var base = index !== -1 ? path.slice(0, index + marker.length) : '/';
+            if (!base.endsWith('/')) {
+                base += '/';
+            }
+            window.BASE_URL = base === '/' ? '' : base.replace(/\/$/, '');
+            document.write('<base href="' + base + '">');
+        })();
+    </script>
+    <!-- Rutas relativizadas para cumplir ISO 17025/NOM-059 -->
+    
+    <title>GAMP 5 - Sistema de Administración | SBL Pharma</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!-- Bootstrap, Montserrat, FontAwesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/styles/master-theme.css">
+    <link rel="stylesheet" href="assets/styles/internal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
     <link href="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.min.css" rel="stylesheet">
     <style>
-        :root {
-            --gamp-primary: #2c5aa0;
-            --gamp-secondary: #34495e;
-            --gamp-success: #27ae60;
-            --gamp-warning: #f39c12;
-            --gamp-danger: #e74c3c;
-            --gamp-info: #3498db;
-            --gamp-light: #ecf0f1;
-            --gamp-dark: #2c3e50;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
+            background: #f4f6f8;
+            font-family: 'Montserrat', Arial, sans-serif;
+            margin: 0;
+            overflow-x: hidden;
         }
-
-        .navbar-brand {
-            font-weight: bold;
-            color: var(--gamp-primary) !important;
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0;
+            width: 200px;
+            height: 100vh;
+            background: #0d575a;
+            color: #fff;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 30px;
+            box-shadow: 1px 0 6px #0002;
         }
-
-        .nav-pills .nav-link {
-            color: var(--gamp-secondary);
-            margin-right: 0.5rem;
-            margin-bottom: 0.25rem;
+        .sidebar-logo img {
+            width: 140px;
+            margin-bottom: 22px;
         }
-
-        .nav-pills .nav-link.active {
-            background-color: var(--gamp-primary);
+        .sidebar-nav {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
         }
-
+        .sidebar-nav .nav-link {
+            width: 92%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0 8px 0;
+            color: #cfd8dc;
+            text-decoration: none;
+            font-size: 1.08rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border-radius: 10px;
+            margin-bottom: 2px;
+            transition: background 0.2s, color 0.2s;
+            position: relative;
+        }
+        .sidebar-nav .nav-link.active,
+        .sidebar-nav .nav-link:hover {
+            background: #0c8c98;
+            color: #fff;
+        }
+        .sidebar-nav .nav-link i {
+            font-size: 1.85rem;
+            margin-bottom: 8px;
+        }
+        .sidebar-nav .nav-link.active::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 16px;
+            width: 4px;
+            height: 32px;
+            background: #fff;
+            border-radius: 2px;
+        }
+        .main-content {
+            margin-left: 200px;
+            min-height: 100vh;
+            padding: 0;
+            width: calc(100% - 200px);
+        }
+        .topbar {
+            background: #fff;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 34px 0 28px;
+            box-shadow: 0 1px 8px #0001;
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 26px;
+        }
+        .topbar-title {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #217b9b;
+            letter-spacing: 1px;
+        }
+        .topbar-user {
+            font-size: 1rem;
+            color: #217b9b;
+            font-weight: 400;
+            margin-left: 24px;
+        }
+        .topbar-icons {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .topbar-icons i {
+            font-size: 1.2rem;
+            color: #217b9b;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .dashboard-section {
+            padding: 32px 28px;
+        }
+        .dashboard-bar {
+            background: #0d575a;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            margin-bottom: 22px;
+            padding: 10px 18px;
+            letter-spacing: 0.5px;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+        .dashboard-grid.grid-5 {
+            grid-template-columns: repeat(5, 1fr);
+        }
+        .dashboard-grid.grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        .dashboard-btn {
+            background: #0c8c98;
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            padding: 24px 12px 14px 12px;
+            min-width: 130px;
+            text-align: left;
+            font-size: 1.05rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            transition: background 0.18s, color 0.18s;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .dashboard-btn .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+            white-space: pre-line;
+        }
+        .dashboard-btn .panel-value {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            word-break: break-word;
+        }
+        .dashboard-btn:hover {
+            background: #217b9b;
+            color: #fff;
+        }
+        .dashboard-btn .icon-btn {
+            font-size: 1.7rem;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .dashboard-btn.sbl-skyblue {
+            background: #217b9b;
+        }
+        .dashboard-btn.sbl-skyblue:hover {
+            background: #0d575a;
+        }
+        
+        /* GAMP 5 specific styles */
+        .gamp-success {
+            background: #27ae60;
+        }
+        .gamp-success:hover {
+            background: #1e8449;
+        }
+        .gamp-warning {
+            background: #f39c12;
+            color: #212529;
+        }
+        .gamp-warning:hover {
+            background: #d68910;
+        }
+        .gamp-danger {
+            background: #e74c3c;
+        }
+        .gamp-danger:hover {
+            background: #c0392b;
+        }
+        .gamp-info {
+            background: #3498db;
+        }
+        .gamp-info:hover {
+            background: #2980b9;
+        }
+        
+        /* Cards */
         .card {
             border: none;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
             margin-bottom: 1.5rem;
         }
-
         .card-header {
-            background-color: var(--gamp-light);
+            background-color: #e6f6fb;
             border-bottom: 1px solid #dee2e6;
+            font-weight: 700;
+            color: #0d575a;
             font-weight: 600;
         }
 
@@ -187,7 +386,7 @@
         }
 
         .system-health {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--sbl-accent) 0%, var(--sbl-secondary) 100%);
             color: white;
             border-radius: 1rem;
             padding: 2rem;
@@ -224,62 +423,190 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-shield-alt"></i>
-                GAMP 5 Sistema de Administración
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/images/sbl-logo.png" alt="Logo SBL Pharma" class="logo"/>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-link active" href="#" data-section="dashboard">
+                <i class="fa fa-tachometer-alt"></i>
+                <span>DASHBOARD</span>
             </a>
-            <div class="navbar-nav ms-auto">
-                <span class="nav-link">
-                    <i class="fas fa-user"></i>
-                    <span id="current-user">Usuario</span>
-                </span>
-                <a class="nav-link" href="#" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Salir
-                </a>
+            <a class="nav-link" href="#" data-section="lifecycle">
+                <i class="fa fa-project-diagram"></i>
+                <span>CICLO DE VIDA</span>
+            </a>
+            <a class="nav-link" href="#" data-section="qualification">
+                <i class="fa fa-certificate"></i>
+                <span>CALIFICACIÓN</span>
+            </a>
+            <a class="nav-link" href="#" data-section="validation">
+                <i class="fa fa-check-double"></i>
+                <span>VALIDACIÓN</span>
+            </a>
+            <a class="nav-link" href="#" data-section="changes">
+                <i class="fa fa-exchange-alt"></i>
+                <span>CAMBIOS</span>
+            </a>
+            <a class="nav-link" href="#" data-section="monitoring">
+                <i class="fa fa-chart-line"></i>
+                <span>MONITOREO</span>
+            </a>
+            <a class="nav-link" href="#" data-section="risks">
+                <i class="fa fa-exclamation-triangle"></i>
+                <span>RIESGOS</span>
+            </a>
+            <a class="nav-link" href="#" data-section="documents">
+                <i class="fa fa-file-alt"></i>
+                <span>DOCUMENTOS</span>
+            </a>
+            <a class="nav-link" href="#" data-section="providers">
+                <i class="fa fa-building"></i>
+                <span>PROVEEDORES</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <i class="fa fa-bars menu-toggle" id="sidebarOpen"></i>
+                <span class="topbar-title">GAMP 5 Sistema de Administración</span>
+            </div>
+            <div class="topbar-icons">
+                <i class="fa fa-search" id="btnSearch"></i>
+                <i class="fa fa-bell" id="btnBell"></i>
+                <div class="topbar-user-box">
+                    <i class="fa fa-user-circle" id="btnUser"></i>
+                    <span class="topbar-user" id="userName">Administrador</span>
+                    <div id="userMenu" class="dropdown-panel" style="display: none;">
+                        <div class="menu-section-title">GAMP 5 Admin</div>
+                        <div id="menuNombre">Usuario: Administrador GAMP5</div>
+                        <div id="menuRol">Rol: Sistema Admin</div>
+                        <button class="btn-perfil">Mi información</button>
+                        <button class="btn-cerrar">Cerrar sesión</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </nav>
 
-    <div class="container-fluid mt-4">
-        <!-- Navegación de Módulos -->
-        <div class="module-nav">
-            <ul class="nav nav-pills" id="module-tabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="dashboard-tab" data-bs-toggle="pill" 
-                            data-bs-target="#dashboard" type="button" role="tab">
-                        <i class="fas fa-tachometer-alt"></i>
-                        Dashboard
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="lifecycle-tab" data-bs-toggle="pill" 
-                            data-bs-target="#lifecycle" type="button" role="tab">
-                        <i class="fas fa-project-diagram"></i>
-                        Ciclo de Vida
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="qualification-tab" data-bs-toggle="pill" 
-                            data-bs-target="#qualification" type="button" role="tab">
-                        <i class="fas fa-certificate"></i>
-                        Calificación
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="validation-tab" data-bs-toggle="pill" 
-                            data-bs-target="#validation" type="button" role="tab">
-                        <i class="fas fa-check-double"></i>
-                        Validación
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="changes-tab" data-bs-toggle="pill" 
-                            data-bs-target="#changes" type="button" role="tab">
-                        <i class="fas fa-exchange-alt"></i>
-                        Gestión de Cambios
+        <section class="dashboard-section">
+            <!-- Dashboard Principal GAMP 5 -->
+            <div class="dashboard-bar">Estado General del Sistema</div>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card gamp-info" style="background: linear-gradient(135deg, var(--sbl-accent) 0%, var(--sbl-secondary) 100%); color: white; padding: 20px; border-radius: 8px;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4><i class="fa fa-shield-alt"></i> Estado General del Sistema</h4>
+                                <p class="mb-0">Todos los sistemas operando normalmente. Última verificación...</p>
+                            </div>
+                            <div class="text-end">
+                                <h2 class="mb-0">98.5</h2>
+                                <small>Cumplimiento GxP</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-grid grid-4">
+                <div class="dashboard-btn gamp-info">
+                    <span class="panel-title">Sistemas Activos</span>
+                    <span class="panel-value" id="activeSystems">42</span>
+                </div>
+                <div class="dashboard-btn gamp-success">
+                    <span class="panel-title">Tasa de Éxito
+Validación</span>
+                    <span class="panel-value" id="validationRate">95%</span>
+                </div>
+                <div class="dashboard-btn gamp-warning">
+                    <span class="panel-title">Calibraciones
+Pendientes</span>
+                    <span class="panel-value" id="pendingCal">7</span>
+                </div>
+                <div class="dashboard-btn gamp-danger">
+                    <span class="panel-title">Cambios
+Pendientes</span>
+                    <span class="panel-value" id="pendingChanges">3</span>
+                </div>
+            </div>
+
+            <!-- Dashboard Secundario GAMP 5 -->
+            <div class="dashboard-bar">Gestión Documental GxP</div>
+            <div class="dashboard-grid grid-4">
+                <div class="dashboard-btn">
+                    <span class="panel-title">Total
+Documentos</span>
+                    <span class="panel-value" id="totalDocs">156</span>
+                </div>
+                <div class="dashboard-btn gamp-success">
+                    <span class="panel-title">Documentos
+Vigentes</span>
+                    <span class="panel-value" id="activeDocs">142</span>
+                </div>
+                <div class="dashboard-btn gamp-warning">
+                    <span class="panel-title">Pendientes
+Aprobación</span>
+                    <span class="panel-value" id="pendingApproval">8</span>
+                </div>
+                <div class="dashboard-btn sbl-skyblue">
+                    <span class="panel-title">Firmas
+Electrónicas</span>
+                    <span class="panel-value" id="electronicSigs">89</span>
+                </div>
+            </div>
+
+            <!-- Secciones de contenido -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fa fa-clock"></i> Actividad Reciente</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="recentActivity">
+                                <div class="activity-item">Sistema de calibración actualizado - hace 15 min</div>
+                                <div class="activity-item">Documento SOP-001 aprobado - hace 1 hora</div>
+                                <div class="activity-item">Validación IQ completada - hace 2 horas</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fa fa-exclamation-triangle"></i> Alertas Activas</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="activeAlerts">
+                                <div class="alert-item alert-warning">
+                                    <i class="fa fa-warning"></i> Calibración vencida: Balanza-001
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos de rendimiento -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h5><i class="fa fa-chart-line"></i> Tendencias de Rendimiento</h5>
+                        <canvas id="performanceChart" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h5><i class="fa fa-pie-chart"></i> KPIs de Cumplimiento</h5>
+                        <canvas id="complianceChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">

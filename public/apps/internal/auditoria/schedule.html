@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function() {
+            var marker = '/public/';
+            var path = window.location.pathname || '';
+            var index = path.indexOf(marker);
+            var base = index !== -1 ? path.slice(0, index + marker.length) : '/';
+            if (!base.endsWith('/')) {
+                base += '/';
+            }
+            window.BASE_URL = base === '/' ? '' : base.replace(/\/$/, '');
+            document.write('<base href="' + base + '">');
+        })();
+    </script>
+    
+    <title>Programar Auditoría | SBL Pharma</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/styles/master-theme.css">
+    <link rel="stylesheet" href="assets/styles/internal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+    
+    <style>
+        /* Responsive Design SBL */
+        @media (max-width: 600px) {
+            .sidebar { width: 100%; height: auto; position: relative; padding: 15px 0; }
+            .main-content { margin-left: 0; width: 100%; }
+            .dashboard-grid { grid-template-columns: 1fr; gap: 15px; }
+            .topbar { padding: 0 15px; }
+        }
+        @media (min-width: 601px) and (max-width: 900px) {
+            .sidebar { width: 200px; }
+            .main-content { margin-left: 200px; }
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (min-width: 901px) {
+            .sidebar { width: 200px; }
+            .main-content { margin-left: 200px; }
+            .dashboard-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/images/sbl-logo.png" alt="Logo SBL Pharma" class="logo"/>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li><a href="apps/internal/index.html"><i class="fa fa-home"></i> Dashboard</a></li>
+                <li><a href="apps/internal/auditoria/index.html"><i class="fa fa-search"></i> Auditorías</a></li>
+                <li><a href="apps/internal/auditoria/list_audit_trail.html"><i class="fa fa-list"></i> Seguimiento</a></li>
+                <li><a href="apps/internal/auditoria/schedule.html" class="active"><i class="fa fa-calendar"></i> Programar</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <i class="fa fa-bars menu-toggle" id="sidebarOpen"></i>
+                <span class="topbar-title">Programar Auditoría</span>
+            </div>
+            <div class="topbar-icons">
+                <i class="fa fa-search" id="btnSearch"></i>
+                <i class="fa fa-bell" id="btnBell"></i>
+                <div class="topbar-user-box">
+                    <i class="fa fa-user-circle" id="btnUser"></i>
+                    <span class="topbar-user" id="userName">Administrador</span>
+                </div>
+            </div>
+        </div>
+
+        <section class="dashboard-section">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4><i class="fa fa-calendar-plus"></i> Nueva Auditoría</h4>
+                            </div>
+                            <div class="card-body">
+                                <form id="auditForm" class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="auditType" class="form-label">Tipo de Auditoría</label>
+                                        <select class="form-select" id="auditType" required>
+                                            <option value="">Seleccionar tipo</option>
+                                            <option value="internal">Auditoría Interna</option>
+                                            <option value="external">Auditoría Externa</option>
+                                            <option value="iso17025">Auditoría ISO 17025</option>
+                                            <option value="gmp">Auditoría GMP</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="auditDate" class="form-label">Fecha de Auditoría</label>
+                                        <input type="date" class="form-control" id="auditDate" required>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="auditor" class="form-label">Auditor Responsable</label>
+                                        <select class="form-select" id="auditor" required>
+                                            <option value="">Seleccionar auditor</option>
+                                            <option value="admin">Administrador Principal</option>
+                                            <option value="qa">Responsable de Calidad</option>
+                                            <option value="external">Auditor Externo</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="department" class="form-label">Departamento</label>
+                                        <select class="form-select" id="department" required>
+                                            <option value="">Seleccionar departamento</option>
+                                            <option value="calibration">Calibración</option>
+                                            <option value="quality">Calidad</option>
+                                            <option value="maintenance">Mantenimiento</option>
+                                            <option value="all">Todos los departamentos</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <label for="scope" class="form-label">Alcance de la Auditoría</label>
+                                        <textarea class="form-control" id="scope" rows="3" placeholder="Describir el alcance y objetivos de la auditoría..."></textarea>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <label for="checklist" class="form-label">Lista de Verificación</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="iso17025Check">
+                                            <label class="form-check-label" for="iso17025Check">
+                                                Verificación ISO 17025
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="equipmentCheck">
+                                            <label class="form-check-label" for="equipmentCheck">
+                                                Revisión de Equipos
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="documentCheck">
+                                            <label class="form-check-label" for="documentCheck">
+                                                Auditoría Documental
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fa fa-save"></i> Programar Auditoría
+                                        </button>
+                                        <button type="button" class="btn btn-secondary ms-2" onclick="history.back()">
+                                            <i class="fa fa-arrow-left"></i> Volver
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('auditForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validación básica
+            const requiredFields = ['auditType', 'auditDate', 'auditor', 'department'];
+            let valid = true;
+            
+            requiredFields.forEach(field => {
+                const element = document.getElementById(field);
+                if (!element.value) {
+                    element.classList.add('is-invalid');
+                    valid = false;
+                } else {
+                    element.classList.remove('is-invalid');
+                }
+            });
+            
+            if (valid) {
+                alert('Auditoría programada exitosamente');
+                // Aquí se enviarían los datos al servidor
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
