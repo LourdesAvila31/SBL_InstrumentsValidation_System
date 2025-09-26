@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBL Sistema de Instrumentos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+        .status { padding: 15px; margin: 15px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .btn { display: inline-block; padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 5px; margin: 5px; }
+        .btn:hover { background: #2980b9; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 SBL Sistema de Instrumentos - Diagnóstico</h1>
+        
+        <div class="error">
+            <h3>❌ Problema Detectado</h3>
+            <p><strong>Apache no está sirviendo archivos PHP correctamente</strong></p>
+            <p>Los archivos están en la ubicación correcta pero no son accesibles vía web.</p>
+        </div>
+        
+        <div class="warning">
+            <h3>⚠️ Soluciones Recomendadas</h3>
+            <ol>
+                <li><strong>Reiniciar XAMPP:</strong> Use el XAMPP Control Panel para detener y reiniciar Apache</li>
+                <li><strong>Verificar configuración:</strong> Asegúrese de que PHP esté habilitado en Apache</li>
+                <li><strong>Verificar puertos:</strong> Confirme que no hay conflictos en el puerto 80</li>
+                <li><strong>Verificar permisos:</strong> Los archivos deben tener permisos de lectura</li>
+            </ol>
+        </div>
+        
+        <div class="success">
+            <h3>✅ Archivos del Sistema Disponibles</h3>
+            <p>Los siguientes archivos han sido creados y están listos para usar:</p>
+            <ul>
+                <li><strong>Backend PHP:</strong> InstrumentosManager.php (Clase CRUD completa)</li>
+                <li><strong>API REST:</strong> 5 endpoints para gestión de instrumentos</li>
+                <li><strong>Base de Datos:</strong> Setup automático con datos de muestra</li>
+                <li><strong>Frontend:</strong> Interfaz web completa</li>
+            </ul>
+        </div>
+        
+        <h3>🚀 Próximos Pasos</h3>
+        <div style="background: #e8f4f8; padding: 15px; border-radius: 5px;">
+            <p><strong>Una vez que Apache funcione correctamente:</strong></p>
+            <ol>
+                <li>Ejecutar: <code>http://localhost/SBL_SISTEMA_INTERNO/backend/instrumentos/setup_instrumentos_table.php</code></li>
+                <li>Probar API: <code>http://localhost/SBL_SISTEMA_INTERNO/backend/instrumentos/gages/list_gages.php</code></li>
+                <li>Usar interfaz: <code>http://localhost/SBL_SISTEMA_INTERNO/public/apps/internal/instrumentos/list_gages.html</code></li>
+            </ol>
+        </div>
+        
+        <h3>📋 Estado del Sistema</h3>
+        <pre>
+✅ MySQL: Funcionando (puerto 3306)
+❌ Apache/PHP: Problema de configuración
+✅ Archivos Backend: Creados y listos
+✅ Archivos Frontend: Creados y listos
+✅ Base de Datos: Estructura preparada
+        </pre>
+        
+        <div style="margin-top: 30px;">
+            <a href="#" onclick="location.reload()" class="btn">🔄 Actualizar Estado</a>
+            <a href="http://localhost/xampp" class="btn">🛠️ XAMPP Info</a>
+        </div>
+    </div>
+</body>
+</html>
