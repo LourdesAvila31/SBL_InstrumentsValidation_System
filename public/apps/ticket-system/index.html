@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Tickets - GAMP 5 & GxP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .risk-critical { background-color: #dc3545; color: white; }
+        .risk-alto { background-color: #fd7e14; color: white; }
+        .risk-medio { background-color: #ffc107; color: black; }
+        .risk-bajo { background-color: #20c997; color: white; }
+        .risk-minimo { background-color: #6c757d; color: white; }
+        
+        .status-abierto { color: #0d6efd; }
+        .status-en-progreso { color: #fd7e14; }
+        .status-en-revision { color: #6610f2; }
+        .status-resuelto { color: #198754; }
+        .status-cerrado { color: #6c757d; }
+        .status-escalado { color: #dc3545; }
+        
+        .ticket-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .ticket-card.priority-1 { border-left-color: #dc3545; }
+        .ticket-card.priority-2 { border-left-color: #fd7e14; }
+        .ticket-card.priority-3 { border-left-color: #ffc107; }
+        .ticket-card.priority-4 { border-left-color: #20c997; }
+        .ticket-card.priority-5 { border-left-color: #6c757d; }
+        
+        .ticket-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .matrix-cell {
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #dee2e6;
+            font-weight: bold;
+        }
+        
+        .dashboard-metric {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .activity-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .activity-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+        
+        .activity-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .activity-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #0d6efd;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="fas fa-ticket-alt"></i> Sistema de Tickets GxP</a>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user"></i> Usuario
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="showProfile()"><i class="fas fa-user-circle"></i> Perfil</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-tachometer-alt"></i> Panel de Control</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action active" onclick="showDashboard()">
+                            <i class="fas fa-chart-pie"></i> Dashboard
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showCreateTicket()">
+                            <i class="fas fa-plus-circle"></i> Crear Ticket
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showTicketList()">
+                            <i class="fas fa-list"></i> Lista de Tickets
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showRiskMatrix()">
+                            <i class="fas fa-th"></i> Matriz de Riesgo
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showReports()">
+                            <i class="fas fa-chart-bar"></i> Reportes
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showSettings()">
+                            <i class="fas fa-cog"></i> Configuración
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <!-- Dashboard View -->
+                <div id="dashboard-view">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h2><i class="fas fa-chart-pie"></i> Dashboard de Tickets</h2>
+                            <p class="text-muted">Sistema de Gestión de Tickets conforme a GAMP 5 y normativas GxP</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Métricas principales -->
+                    <div class="row mb-4" id="stats-cards">
+                        <!-- Las tarjetas de estadísticas se llenarán dinámicamente -->
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Gráfico de tickets por riesgo -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-exclamation-triangle"></i> Tickets por Nivel de Riesgo</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="riskChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tickets recientes -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-clock"></i> Tickets Recientes</h5>
+                                </div>
+                                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                    <div id="recent-tickets">
+                                        <!-- Se llenarán dinámicamente -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create Ticket View -->
+                <div id="create-ticket-view" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h2><i class="fas fa-plus-circle"></i> Crear Nuevo Ticket</h2>
+                            <p class="text-muted">Complete la información del problema o sugerencia</p>
+                        </div>
+                    </div>
+                    
+                    <form id="create-ticket-form">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Información del Ticket</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <label for="ticket-title" class="form-label">Título *</label>
+                                            <input type="text" class="form-control" id="ticket-title" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="ticket-category" class="form-label">Categoría *</label>
+                                            <select class="form-select" id="ticket-category" required>
+                                                <option value="">Seleccionar categoría</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="ticket-description" class="form-label">Descripción *</label>
+                                    <textarea class="form-control" id="ticket-description" rows="4" required 
+                                              placeholder="Describa detalladamente el problema, incluyendo pasos para reproducir..."></textarea>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="ticket-impact" class="form-label">Impacto *</label>
+                                            <select class="form-select" id="ticket-impact" required>
+                                                <option value="">Seleccionar impacto</option>
+                                                <option value="Crítico">Crítico - Sistema no funcional</option>
+                                                <option value="Alto">Alto - Funcionalidad principal afectada</option>
+                                                <option value="Medio">Medio - Funcionalidad secundaria afectada</option>
+                                                <option value="Bajo">Bajo - Problema menor</option>
+                                                <option value="Mínimo">Mínimo - Mejora cosmética</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="ticket-probability" class="form-label">Probabilidad *</label>
+                                            <select class="form-select" id="ticket-probability" required>
+                                                <option value="">Seleccionar probabilidad</option>
+                                                <option value="Crítico">Crítico - Siempre ocurre</option>
+                                                <option value="Alto">Alto - Frecuentemente</option>
+                                                <option value="Medio">Medio - Ocasionalmente</option>
+                                                <option value="Bajo">Bajo - Raramente</option>
+                                                <option value="Mínimo">Mínimo - Muy raro</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="ticket-severity" class="form-label">Severidad *</label>
+                                            <select class="form-select" id="ticket-severity" required>
+                                                <option value="">Seleccionar severidad</option>
+                                                <option value="Crítico">Crítico</option>
+                                                <option value="Alto">Alto</option>
+                                                <option value="Medio">Medio</option>
+                                                <option value="Bajo">Bajo</option>
+                                                <option value="Mínimo">Mínimo</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="gxp-classification" class="form-label">Clasificación GxP</label>
+                                            <select class="form-select" id="gxp-classification">
+                                                <option value="No Aplica">No Aplica</option>
+                                                <option value="GCP">GCP - Buenas Prácticas Clínicas</option>
+                                                <option value="GLP">GLP - Buenas Prácticas de Laboratorio</option>
+                                                <option value="GMP">GMP - Buenas Prácticas de Manufactura</option>
+                                                <option value="GDP">GDP - Buenas Prácticas de Distribución</option>
+                                                <option value="GVP">GVP - Buenas Prácticas de Farmacovigilancia</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Impacto Regulatorio</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="regulatory-impact">
+                                                <label class="form-check-label" for="regulatory-impact">
+                                                    Este problema tiene impacto regulatorio
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="validation-impact">
+                                                <label class="form-check-label" for="validation-impact">
+                                                    Este problema requiere revalidación
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="risk-preview" class="alert alert-info" style="display: none;">
+                                    <h6><i class="fas fa-calculator"></i> Evaluación de Riesgo Estimada</h6>
+                                    <p id="risk-calculation"></p>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Crear Ticket
+                                </button>
+                                <button type="button" class="btn btn-secondary ms-2" onclick="showDashboard()">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Ticket List View -->
+                <div id="ticket-list-view" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h2><i class="fas fa-list"></i> Lista de Tickets</h2>
+                            <p class="text-muted">Gestión y seguimiento de todos los tickets</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtros -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-filter"></i> Filtros</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <select class="form-select" id="filter-status">
+                                        <option value="">Todos los estados</option>
+                                        <option value="Abierto">Abierto</option>
+                                        <option value="En Progreso">En Progreso</option>
+                                        <option value="En Revisión">En Revisión</option>
+                                        <option value="Resuelto">Resuelto</option>
+                                        <option value="Cerrado">Cerrado</option>
+                                        <option value="Escalado">Escalado</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="filter-risk">
+                                        <option value="">Todos los riesgos</option>
+                                        <option value="Crítico">Crítico</option>
+                                        <option value="Alto">Alto</option>
+                                        <option value="Medio">Medio</option>
+                                        <option value="Bajo">Bajo</option>
+                                        <option value="Mínimo">Mínimo</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="filter-category">
+                                        <option value="">Todas las categorías</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-primary" onclick="applyFilters()">
+                                        <i class="fas fa-search"></i> Filtrar
+                                    </button>
+                                    <button class="btn btn-outline-secondary ms-2" onclick="clearFilters()">
+                                        <i class="fas fa-undo"></i> Limpiar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lista de tickets -->
+                    <div id="tickets-container">
+                        <!-- Se llenarán dinámicamente -->
+                    </div>
+                    
+                    <!-- Paginación -->
+                    <nav aria-label="Paginación de tickets">
+                        <ul class="pagination justify-content-center" id="pagination">
+                            <!-- Se llenará dinámicamente -->
+                        </ul>
+                    </nav>
+                </div>
+
+                <!-- Risk Matrix View -->
+                <div id="risk-matrix-view" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h2><i class="fas fa-th"></i> Matriz de Riesgo GAMP 5</h2>
+                            <p class="text-muted">Visualización de la matriz de riesgo utilizada para clasificar tickets</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Matriz de Riesgo: Impacto vs Probabilidad</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th rowspan="2" class="text-center align-middle">IMPACTO</th>
+                                            <th colspan="5" class="text-center">PROBABILIDAD</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center">Mínimo</th>
+                                            <th class="text-center">Bajo</th>
+                                            <th class="text-center">Medio</th>
+                                            <th class="text-center">Alto</th>
+                                            <th class="text-center">Crítico</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Crítico</strong></td>
+                                            <td class="matrix-cell risk-alto">Alto</td>
+                                            <td class="matrix-cell risk-critical">Crítico</td>
+                                            <td class="matrix-cell risk-critical">Crítico</td>
+                                            <td class="matrix-cell risk-critical">Crítico</td>
+                                            <td class="matrix-cell risk-critical">Crítico</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Alto</strong></td>
+                                            <td class="matrix-cell risk-medio">Medio</td>
+                                            <td class="matrix-cell risk-alto">Alto</td>
+                                            <td class="matrix-cell risk-alto">Alto</td>
+                                            <td class="matrix-cell risk-critical">Crítico</td>
+                                            <td class="matrix-cell risk-critical">Crítico</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Medio</strong></td>
+                                            <td class="matrix-cell risk-bajo">Bajo</td>
+                                            <td class="matrix-cell risk-medio">Medio</td>
+                                            <td class="matrix-cell risk-medio">Medio</td>
+                                            <td class="matrix-cell risk-alto">Alto</td>
+                                            <td class="matrix-cell risk-alto">Alto</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Bajo</strong></td>
+                                            <td class="matrix-cell risk-minimo">Mínimo</td>
+                                            <td class="matrix-cell risk-bajo">Bajo</td>
+                                            <td class="matrix-cell risk-bajo">Bajo</td>
+                                            <td class="matrix-cell risk-medio">Medio</td>
+                                            <td class="matrix-cell risk-medio">Medio</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Mínimo</strong></td>
+                                            <td class="matrix-cell risk-minimo">Mínimo</td>
+                                            <td class="matrix-cell risk-minimo">Mínimo</td>
+                                            <td class="matrix-cell risk-bajo">Bajo</td>
+                                            <td class="matrix-cell risk-bajo">Bajo</td>
+                                            <td class="matrix-cell risk-medio">Medio</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>Leyenda de Niveles de Riesgo:</h6>
+                                    <ul class="list-unstyled">
+                                        <li><span class="badge risk-critical me-2">Crítico</span> Requiere acción inmediata (1 hora)</li>
+                                        <li><span class="badge risk-alto me-2">Alto</span> Requiere acción urgente (4 horas)</li>
+                                        <li><span class="badge risk-medio me-2">Medio</span> Requiere acción en 24 horas</li>
+                                        <li><span class="badge risk-bajo me-2">Bajo</span> Requiere acción en 3 días</li>
+                                        <li><span class="badge risk-minimo me-2">Mínimo</span> Requiere acción en 1 semana</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Criterios de Evaluación:</h6>
+                                    <ul>
+                                        <li><strong>Impacto:</strong> Efecto en el sistema y usuarios</li>
+                                        <li><strong>Probabilidad:</strong> Frecuencia de ocurrencia</li>
+                                        <li><strong>Escalación:</strong> Automática para riesgo Alto/Crítico</li>
+                                        <li><strong>Conformidad:</strong> Alineado con GAMP 5 y GxP</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para detalles del ticket -->
+    <div class="modal fade" id="ticketModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ticketModalTitle">Detalles del Ticket</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="ticketModalBody">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Variables globales
+        let currentPage = 1;
+        let currentFilters = {};
+        let riskChart;
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboard();
+            loadCategories();
+            setupEventListeners();
+        });
+        
+        // Event listeners
+        function setupEventListeners() {
+            // Formulario de creación de ticket
+            document.getElementById('create-ticket-form').addEventListener('submit', handleCreateTicket);
+            
+            // Cambios en los campos de riesgo para mostrar preview
+            ['ticket-impact', 'ticket-probability', 'ticket-severity'].forEach(id => {
+                document.getElementById(id).addEventListener('change', updateRiskPreview);
+            });
+        }
+        
+        // Navegación
+        function showDashboard() {
+            hideAllViews();
+            document.getElementById('dashboard-view').style.display = 'block';
+            setActiveMenuItem(0);
+            loadDashboard();
+        }
+        
+        function showCreateTicket() {
+            hideAllViews();
+            document.getElementById('create-ticket-view').style.display = 'block';
+            setActiveMenuItem(1);
+        }
+        
+        function showTicketList() {
+            hideAllViews();
+            document.getElementById('ticket-list-view').style.display = 'block';
+            setActiveMenuItem(2);
+            loadTickets();
+        }
+        
+        function showRiskMatrix() {
+            hideAllViews();
+            document.getElementById('risk-matrix-view').style.display = 'block';
+            setActiveMenuItem(3);
+        }
+        
+        function hideAllViews() {
+            const views = ['dashboard-view', 'create-ticket-view', 'ticket-list-view', 'risk-matrix-view'];
+            views.forEach(view => {
+                document.getElementById(view).style.display = 'none';
+            });
+        }
+        
+        function setActiveMenuItem(index) {
+            document.querySelectorAll('.list-group-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+        }
+        
+        // Carga del dashboard
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/app/Modules/Internal/TicketSystem/TicketController.php?action=stats');
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayStats(result.data);
+                    displayRiskChart(result.data.by_risk);
+                    loadRecentTickets();
+                }
+            } catch (error) {
+                console.error('Error cargando dashboard:', error);
+                showNotification('Error cargando dashboard', 'error');
+            }
+        }
+        
+        // Mostrar estadísticas
+        function displayStats(stats) {
+            const container = document.getElementById('stats-cards');
+            const totalTickets = Object.values(stats.by_status).reduce((a, b) => a + b, 0);
+            const criticalTickets = stats.by_risk['Crítico'] || 0;
+            const resolvedTickets = stats.by_status['Resuelto'] || 0;
+            const avgResolutionTime = stats.time_metrics.avg_resolution_time || 0;
+            
+            container.innerHTML = `
+                <div class="col-md-3">
+                    <div class="dashboard-metric">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h3>${totalTickets}</h3>
+                                <p class="mb-0">Total Tickets</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-ticket-alt fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dashboard-metric" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h3>${criticalTickets}</h3>
+                                <p class="mb-0">Críticos</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dashboard-metric" style="background: linear-gradient(135deg, #2ed573 0%, #1e90ff 100%);">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h3>${resolvedTickets}</h3>
+                                <p class="mb-0">Resueltos</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-check-circle fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dashboard-metric" style="background: linear-gradient(135deg, #ffa726 0%, #ff7043 100%);">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h3>${Math.round(avgResolutionTime)}h</h3>
+                                <p class="mb-0">Tiempo Promedio</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Gráfico de riesgo
+        function displayRiskChart(riskData) {
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            
+            if (riskChart) {
+                riskChart.destroy();
+            }
+            
+            riskChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Crítico', 'Alto', 'Medio', 'Bajo', 'Mínimo'],
+                    datasets: [{
+                        data: [
+                            riskData['Crítico'] || 0,
+                            riskData['Alto'] || 0,
+                            riskData['Medio'] || 0,
+                            riskData['Bajo'] || 0,
+                            riskData['Mínimo'] || 0
+                        ],
+                        backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#20c997', '#6c757d']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Cargar categorías
+        async function loadCategories() {
+            try {
+                const response = await fetch('/app/Modules/Internal/TicketSystem/TicketController.php?action=categories');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const categorySelects = ['ticket-category', 'filter-category'];
+                    categorySelects.forEach(selectId => {
+                        const select = document.getElementById(selectId);
+                        if (select) {
+                            Object.entries(result.data).forEach(([key, value]) => {
+                                const option = document.createElement('option');
+                                option.value = key;
+                                option.textContent = value;
+                                select.appendChild(option);
+                            });
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando categorías:', error);
+            }
+        }
+        
+        // Crear ticket
+        async function handleCreateTicket(event) {
+            event.preventDefault();
+            
+            const formData = {
+                title: document.getElementById('ticket-title').value,
+                description: document.getElementById('ticket-description').value,
+                category: document.getElementById('ticket-category').value,
+                impact: document.getElementById('ticket-impact').value,
+                probability: document.getElementById('ticket-probability').value,
+                severity: document.getElementById('ticket-severity').value,
+                gxp_classification: document.getElementById('gxp-classification').value,
+                regulatory_impact: document.getElementById('regulatory-impact').checked,
+                validation_impact: document.getElementById('validation-impact').checked
+            };
+            
+            try {
+                const response = await fetch('/app/Modules/Internal/TicketSystem/TicketController.php?action=create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`Ticket ${result.ticket_number} creado exitosamente`, 'success');
+                    document.getElementById('create-ticket-form').reset();
+                    document.getElementById('risk-preview').style.display = 'none';
+                    showTicketList();
+                } else {
+                    showNotification(result.error || 'Error creando ticket', 'error');
+                }
+            } catch (error) {
+                console.error('Error creando ticket:', error);
+                showNotification('Error creando ticket', 'error');
+            }
+        }
+        
+        // Preview del riesgo
+        function updateRiskPreview() {
+            const impact = document.getElementById('ticket-impact').value;
+            const probability = document.getElementById('ticket-probability').value;
+            const severity = document.getElementById('ticket-severity').value;
+            
+            if (impact && probability && severity) {
+                const riskLevel = calculateRiskLevel(impact, probability);
+                document.getElementById('risk-calculation').innerHTML = `
+                    <strong>Nivel de Riesgo Estimado:</strong> 
+                    <span class="badge risk-${riskLevel.toLowerCase()}">${riskLevel}</span>
+                    <br><small>Basado en Impacto: ${impact}, Probabilidad: ${probability}</small>
+                `;
+                document.getElementById('risk-preview').style.display = 'block';
+            } else {
+                document.getElementById('risk-preview').style.display = 'none';
+            }
+        }
+        
+        // Cálculo simple del nivel de riesgo (del lado cliente)
+        function calculateRiskLevel(impact, probability) {
+            const weights = {
+                'Crítico': 5,
+                'Alto': 4,
+                'Medio': 3,
+                'Bajo': 2,
+                'Mínimo': 1
+            };
+            
+            const score = (weights[impact] + weights[probability]) / 2;
+            
+            if (score >= 4.5) return 'Crítico';
+            if (score >= 3.5) return 'Alto';
+            if (score >= 2.5) return 'Medio';
+            if (score >= 1.5) return 'Bajo';
+            return 'Mínimo';
+        }
+        
+        // Cargar tickets
+        async function loadTickets(page = 1) {
+            currentPage = page;
+            
+            const params = new URLSearchParams({
+                page: page,
+                limit: 20,
+                ...currentFilters
+            });
+            
+            try {
+                const response = await fetch(`/app/Modules/Internal/TicketSystem/TicketController.php?action=list&${params}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayTickets(result.data);
+                }
+            } catch (error) {
+                console.error('Error cargando tickets:', error);
+                showNotification('Error cargando tickets', 'error');
+            }
+        }
+        
+        // Mostrar tickets
+        function displayTickets(tickets) {
+            const container = document.getElementById('tickets-container');
+            
+            if (tickets.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No se encontraron tickets con los filtros aplicados.</div>';
+                return;
+            }
+            
+            container.innerHTML = tickets.map(ticket => `
+                <div class="card ticket-card priority-${ticket.priority} mb-3" onclick="showTicketDetails(${ticket.id})">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6 class="card-title">
+                                    <span class="badge bg-secondary me-2">${ticket.ticket_number}</span>
+                                    ${ticket.title}
+                                </h6>
+                                <p class="card-text text-muted">${ticket.description.substring(0, 100)}...</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-user"></i> ${ticket.created_by_name || 'Usuario'} • 
+                                    <i class="fas fa-calendar"></i> ${new Date(ticket.created_at).toLocaleDateString()}
+                                </small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="mb-2">
+                                    <span class="badge risk-${ticket.risk_level.toLowerCase()}">${ticket.risk_level}</span>
+                                    <span class="badge bg-info ms-1">${ticket.category.replace('_', ' ')}</span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="status-${ticket.status.toLowerCase().replace(' ', '-')}">
+                                        <i class="fas fa-circle"></i> ${ticket.status}
+                                    </span>
+                                </div>
+                                ${ticket.assigned_to_name ? `<small class="text-muted">Asignado a: ${ticket.assigned_to_name}</small>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Aplicar filtros
+        function applyFilters() {
+            currentFilters = {
+                status: document.getElementById('filter-status').value,
+                risk_level: document.getElementById('filter-risk').value,
+                category: document.getElementById('filter-category').value
+            };
+            
+            // Remover filtros vacíos
+            Object.keys(currentFilters).forEach(key => {
+                if (!currentFilters[key]) delete currentFilters[key];
+            });
+            
+            loadTickets(1);
+        }
+        
+        // Limpiar filtros
+        function clearFilters() {
+            document.getElementById('filter-status').value = '';
+            document.getElementById('filter-risk').value = '';
+            document.getElementById('filter-category').value = '';
+            currentFilters = {};
+            loadTickets(1);
+        }
+        
+        // Mostrar detalles del ticket
+        async function showTicketDetails(ticketId) {
+            try {
+                const response = await fetch(`/app/Modules/Internal/TicketSystem/TicketController.php?action=history&id=${ticketId}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Mostrar modal con detalles del ticket
+                    const modal = new bootstrap.Modal(document.getElementById('ticketModal'));
+                    document.getElementById('ticketModalTitle').textContent = `Historial del Ticket #${ticketId}`;
+                    
+                    const historyHtml = result.data.map(entry => `
+                        <div class="activity-item">
+                            <strong>${entry.action_type}</strong> - ${entry.performed_by_name || 'Sistema'}
+                            <br><small class="text-muted">${new Date(entry.created_at).toLocaleString()}</small>
+                            ${entry.comment ? `<br><em>${entry.comment}</em>` : ''}
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('ticketModalBody').innerHTML = `
+                        <div class="activity-timeline">
+                            ${historyHtml}
+                        </div>
+                    `;
+                    
+                    modal.show();
+                }
+            } catch (error) {
+                console.error('Error cargando detalles del ticket:', error);
+                showNotification('Error cargando detalles del ticket', 'error');
+            }
+        }
+        
+        // Cargar tickets recientes
+        async function loadRecentTickets() {
+            try {
+                const response = await fetch('/app/Modules/Internal/TicketSystem/TicketController.php?action=list&limit=5');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const container = document.getElementById('recent-tickets');
+                    container.innerHTML = result.data.map(ticket => `
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <strong>${ticket.ticket_number}</strong>
+                                <br><small>${ticket.title}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge risk-${ticket.risk_level.toLowerCase()}">${ticket.risk_level}</span>
+                                <br><small class="text-muted">${new Date(ticket.created_at).toLocaleDateString()}</small>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error cargando tickets recientes:', error);
+            }
+        }
+        
+        // Mostrar notificaciones
+        function showNotification(message, type = 'info') {
+            // Crear elemento de notificación
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
+        }
+        
+        // Funciones adicionales para el menú
+        function showReports() {
+            showNotification('Sección de reportes en desarrollo', 'info');
+        }
+        
+        function showSettings() {
+            showNotification('Sección de configuración en desarrollo', 'info');
+        }
+        
+        function showProfile() {
+            showNotification('Perfil de usuario en desarrollo', 'info');
+        }
+        
+        function logout() {
+            if (confirm('¿Está seguro que desea cerrar sesión?')) {
+                window.location.href = '/logout.php';
+            }
+        }
+    </script>
+</body>
+</html>

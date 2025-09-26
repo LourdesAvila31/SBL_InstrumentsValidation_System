@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Gestión de Cambios - Sistema ISO 17025</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css" rel="stylesheet">
+    <style>
+        .dashboard-card {
+            transition: transform 0.2s;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .alert-critical {
+            border-left: 4px solid #dc3545;
+        }
+        .alert-warning {
+            border-left: 4px solid #ffc107;
+        }
+        .alert-info {
+            border-left: 4px solid #0dcaf0;
+        }
+        .activity-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        .sidebar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .notification-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #dc3545;
+            border-radius: 50%;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h5 class="text-white">🛡️ Sistema ISO 17025</h5>
+                        <small class="text-white-50">Panel de Administración</small>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#dashboard" onclick="showSection('dashboard')">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard Principal
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#audit" onclick="showSection('audit')">
+                                <i class="fas fa-search me-2"></i>
+                                Auditoría
+                                <span class="notification-dot" id="audit-dot" style="display: none;"></span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#incidents" onclick="showSection('incidents')">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Incidentes
+                                <span class="notification-dot" id="incidents-dot"></span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#backups" onclick="showSection('backups')">
+                                <i class="fas fa-database me-2"></i>
+                                Backups
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#configurations" onclick="showSection('configurations')">
+                                <i class="fas fa-cogs me-2"></i>
+                                Configuraciones
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#approvals" onclick="showSection('approvals')">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Aprobaciones
+                                <span class="notification-dot" id="approvals-dot"></span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#reports" onclick="showSection('reports')">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Reportes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#monitoring" onclick="showSection('monitoring')">
+                                <i class="fas fa-heartbeat me-2"></i>
+                                Monitoreo en Tiempo Real
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="section-content">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="fas fa-tachometer-alt me-2"></i>Dashboard de Gestión de Cambios</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="btn-group me-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshDashboard()">
+                                    <i class="fas fa-sync-alt"></i> Actualizar
+                                </button>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="executeManualBackup()">
+                                    <i class="fas fa-database"></i> Backup Manual
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Overview Cards -->
+                    <div class="row mb-4">
+                        <div class="col-xl-2 col-md-4 mb-4">
+                            <div class="card dashboard-card border-left-primary">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Eventos de Auditoría (Hoy)
+                                            </div>
+                                            <div class="metric-value text-primary" id="today-audit-events">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-search fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4 mb-4">
+                            <div class="card dashboard-card border-left-danger">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                                Incidentes Abiertos
+                                            </div>
+                                            <div class="metric-value text-danger" id="open-incidents">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4 mb-4">
+                            <div class="card dashboard-card border-left-warning">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Alertas Activas
+                                            </div>
+                                            <div class="metric-value text-warning" id="active-alerts">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-bell fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4 mb-4">
+                            <div class="card dashboard-card border-left-success">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Backups (Hoy)
+                                            </div>
+                                            <div class="metric-value text-success" id="today-backups">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-database fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4 mb-4">
+                            <div class="card dashboard-card border-left-info">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                Cambios Config (Hoy)
+                                            </div>
+                                            <div class="metric-value text-info" id="today-config-changes">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-cogs fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-2 col-md-4 mb-4">
+                            <div class="card dashboard-card border-left-secondary">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                                Usuarios Activos
+                                            </div>
+                                            <div class="metric-value text-secondary" id="active-users">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="row mb-4">
+                        <div class="col-xl-8 col-lg-7">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">
+                                        <i class="fas fa-chart-line me-2"></i>Actividad del Sistema (Últimos 7 días)
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container">
+                                        <canvas id="activityChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-4 col-lg-5">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">
+                                        <i class="fas fa-chart-pie me-2"></i>Distribución de Incidentes
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container">
+                                        <canvas id="incidentsChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Critical Alerts and Recent Activity -->
+                    <div class="row">
+                        <div class="col-xl-6 col-lg-6">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-danger">
+                                        <i class="fas fa-exclamation-circle me-2"></i>Alertas Críticas
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="critical-alerts-list">
+                                        <!-- Las alertas críticas se cargarán aquí -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-6 col-lg-6">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">
+                                        <i class="fas fa-clock me-2"></i>Actividad Reciente
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recent-activity-list" style="max-height: 300px; overflow-y: auto;">
+                                        <!-- La actividad reciente se cargará aquí -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monitoring Section -->
+                <div id="monitoring-section" class="section-content" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="fas fa-heartbeat me-2"></i>Monitoreo en Tiempo Real</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <button type="button" class="btn btn-sm btn-success" onclick="connectRealTimeMonitoring()">
+                                <i class="fas fa-play"></i> Conectar
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger ms-2" onclick="disconnectRealTimeMonitoring()">
+                                <i class="fas fa-stop"></i> Desconectar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Metrics -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card text-white bg-primary">
+                                <div class="card-body">
+                                    <h5 class="card-title">Base de Datos</h5>
+                                    <p class="card-text metric-value" id="db-response-time">-- ms</p>
+                                    <small>Tiempo de respuesta</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-warning">
+                                <div class="card-body">
+                                    <h5 class="card-title">Uso de Disco</h5>
+                                    <p class="card-text metric-value" id="disk-usage">--%</p>
+                                    <small>Espacio utilizado</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-info">
+                                <div class="card-body">
+                                    <h5 class="card-title">Memoria</h5>
+                                    <p class="card-text metric-value" id="memory-usage">--%</p>
+                                    <small>RAM utilizada</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-success">
+                                <div class="card-body">
+                                    <h5 class="card-title">CPU</h5>
+                                    <p class="card-text metric-value" id="cpu-usage">--%</p>
+                                    <small>Procesador</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Alerts -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-bell me-2"></i>Alertas en Tiempo Real</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="live-alerts" style="max-height: 400px; overflow-y: auto;">
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-satellite-dish fa-3x"></i>
+                                            <p>Conecte el monitoreo en tiempo real para ver alertas</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other sections would be implemented similarly -->
+                
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+        // Global variables
+        let dashboardData = {};
+        let socket = null;
+        let activityChart = null;
+        let incidentsChart = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            setupCharts();
+        });
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/dashboard/data');
+                dashboardData = await response.json();
+                updateDashboardCards();
+                updateCharts();
+                updateCriticalAlerts();
+                updateRecentActivity();
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showNotification('Error cargando datos del dashboard', 'error');
+            }
+        }
+
+        // Update dashboard cards
+        function updateDashboardCards() {
+            const overview = dashboardData.system_overview;
+            if (overview) {
+                document.getElementById('today-audit-events').textContent = overview.today_audit_events || 0;
+                document.getElementById('open-incidents').textContent = overview.open_incidents || 0;
+                document.getElementById('active-alerts').textContent = overview.active_alerts || 0;
+                document.getElementById('today-backups').textContent = overview.today_backups || 0;
+                document.getElementById('today-config-changes').textContent = overview.today_config_changes || 0;
+                document.getElementById('active-users').textContent = overview.active_users || 0;
+            }
+        }
+
+        // Setup charts
+        function setupCharts() {
+            const activityCtx = document.getElementById('activityChart').getContext('2d');
+            activityChart = new Chart(activityCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Eventos de Auditoría',
+                        data: [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }, {
+                        label: 'Incidentes',
+                        data: [],
+                        borderColor: 'rgb(255, 99, 132)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const incidentsCtx = document.getElementById('incidentsChart').getContext('2d');
+            incidentsChart = new Chart(incidentsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Críticos', 'Altos', 'Medios', 'Bajos'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgb(220, 53, 69)',
+                            'rgb(255, 193, 7)',
+                            'rgb(13, 202, 240)',
+                            'rgb(25, 135, 84)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Update charts with data
+        function updateCharts() {
+            // Update activity chart
+            if (dashboardData.recent_activity && activityChart) {
+                // Process activity data for chart
+                // Implementation would depend on data structure
+            }
+
+            // Update incidents chart
+            if (dashboardData.incident_summary && incidentsChart) {
+                const summary = dashboardData.incident_summary;
+                const criticalCount = summary.filter(i => i.severity === 'critical').reduce((sum, i) => sum + parseInt(i.count), 0);
+                const highCount = summary.filter(i => i.severity === 'high').reduce((sum, i) => sum + parseInt(i.count), 0);
+                const mediumCount = summary.filter(i => i.severity === 'medium').reduce((sum, i) => sum + parseInt(i.count), 0);
+                const lowCount = summary.filter(i => i.severity === 'low').reduce((sum, i) => sum + parseInt(i.count), 0);
+
+                incidentsChart.data.datasets[0].data = [criticalCount, highCount, mediumCount, lowCount];
+                incidentsChart.update();
+            }
+        }
+
+        // Update critical alerts
+        function updateCriticalAlerts() {
+            const alertsList = document.getElementById('critical-alerts-list');
+            const alerts = dashboardData.critical_alerts || [];
+
+            if (alerts.length === 0) {
+                alertsList.innerHTML = '<p class="text-muted text-center">No hay alertas críticas activas</p>';
+                return;
+            }
+
+            alertsList.innerHTML = alerts.map(alert => `
+                <div class="alert alert-danger alert-critical mb-2">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>${alert.metric || 'Sistema'}</strong>
+                            <p class="mb-1">${alert.message}</p>
+                            <small class="text-muted">${new Date(alert.created_at).toLocaleString()}</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-success me-1" onclick="acknowledgeAlert('${alert.alert_id}')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="dismissAlert('${alert.alert_id}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update recent activity
+        function updateRecentActivity() {
+            const activityList = document.getElementById('recent-activity-list');
+            const activities = dashboardData.recent_activity || [];
+
+            if (activities.length === 0) {
+                activityList.innerHTML = '<p class="text-muted text-center">No hay actividad reciente</p>';
+                return;
+            }
+
+            activityList.innerHTML = activities.slice(0, 15).map(activity => `
+                <div class="activity-item">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <span class="badge bg-${getActivityColor(activity.activity_type)} status-badge">${activity.activity_type}</span>
+                            <span class="ms-2">${activity.description}</span>
+                        </div>
+                        <small class="text-muted">${new Date(activity.occurred_at).toLocaleString()}</small>
+                    </div>
+                    <small class="text-muted">Por: ${activity.user_name}</small>
+                </div>
+            `).join('');
+        }
+
+        // Get activity color
+        function getActivityColor(type) {
+            const colors = {
+                'audit': 'info',
+                'incident': 'danger',
+                'backup': 'success',
+                'config': 'warning'
+            };
+            return colors[type] || 'secondary';
+        }
+
+        // Show section
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.style.display = 'none';
+            });
+
+            // Show selected section
+            const section = document.getElementById(sectionName + '-section');
+            if (section) {
+                section.style.display = 'block';
+            }
+
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Refresh dashboard
+        async function refreshDashboard() {
+            await loadDashboardData();
+            showNotification('Dashboard actualizado', 'success');
+        }
+
+        // Execute manual backup
+        async function executeManualBackup() {
+            try {
+                const response = await fetch('/api/backup/manual', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ type: 'hot' })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Backup iniciado exitosamente', 'success');
+                    setTimeout(refreshDashboard, 2000);
+                } else {
+                    showNotification('Error ejecutando backup: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Error ejecutando backup', 'error');
+            }
+        }
+
+        // Acknowledge alert
+        async function acknowledgeAlert(alertId) {
+            try {
+                const response = await fetch(`/api/alerts/${alertId}/acknowledge`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    showNotification('Alerta reconocida', 'success');
+                    await loadDashboardData();
+                }
+            } catch (error) {
+                showNotification('Error reconociendo alerta', 'error');
+            }
+        }
+
+        // Dismiss alert
+        async function dismissAlert(alertId) {
+            try {
+                const response = await fetch(`/api/alerts/${alertId}/dismiss`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    showNotification('Alerta descartada', 'success');
+                    await loadDashboardData();
+                }
+            } catch (error) {
+                showNotification('Error descartando alerta', 'error');
+            }
+        }
+
+        // Real-time monitoring
+        function connectRealTimeMonitoring() {
+            if (socket) {
+                socket.disconnect();
+            }
+
+            socket = io('http://localhost:3001');
+
+            socket.on('connect', () => {
+                showNotification('Conectado al monitoreo en tiempo real', 'success');
+            });
+
+            socket.on('new_alert', (alert) => {
+                addLiveAlert(alert);
+                showNotification(`Nueva alerta ${alert.level}: ${alert.message}`, 'warning');
+            });
+
+            socket.on('system_metrics', (metrics) => {
+                updateRealTimeMetrics(metrics);
+            });
+
+            socket.on('disconnect', () => {
+                showNotification('Desconectado del monitoreo en tiempo real', 'warning');
+            });
+        }
+
+        function disconnectRealTimeMonitoring() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+                showNotification('Monitoreo en tiempo real desconectado', 'info');
+            }
+        }
+
+        // Add live alert
+        function addLiveAlert(alert) {
+            const liveAlerts = document.getElementById('live-alerts');
+            const alertElement = document.createElement('div');
+            alertElement.className = `alert alert-${alert.level === 'critical' ? 'danger' : alert.level === 'warning' ? 'warning' : 'info'} mb-2`;
+            alertElement.innerHTML = `
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <strong>${alert.metric || 'Sistema'}</strong>
+                        <p class="mb-1">${alert.message}</p>
+                        <small class="text-muted">${new Date(alert.timestamp).toLocaleString()}</small>
+                    </div>
+                    <span class="badge bg-${alert.level === 'critical' ? 'danger' : alert.level === 'warning' ? 'warning' : 'info'}">${alert.level}</span>
+                </div>
+            `;
+
+            liveAlerts.insertBefore(alertElement, liveAlerts.firstChild);
+
+            // Keep only last 20 alerts
+            while (liveAlerts.children.length > 20) {
+                liveAlerts.removeChild(liveAlerts.lastChild);
+            }
+        }
+
+        // Update real-time metrics
+        function updateRealTimeMetrics(metrics) {
+            if (metrics.database_response_time) {
+                document.getElementById('db-response-time').textContent = Math.round(metrics.database_response_time) + ' ms';
+            }
+            if (metrics.disk_usage) {
+                document.getElementById('disk-usage').textContent = Math.round(metrics.disk_usage) + '%';
+            }
+            if (metrics.memory_usage) {
+                document.getElementById('memory-usage').textContent = Math.round(metrics.memory_usage) + '%';
+            }
+            if (metrics.cpu_usage) {
+                document.getElementById('cpu-usage').textContent = Math.round(metrics.cpu_usage) + '%';
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+
+            const container = document.getElementById('toast-container') || createToastContainer();
+            container.appendChild(toast);
+
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+
+            toast.addEventListener('hidden.bs.toast', () => {
+                container.removeChild(toast);
+            });
+        }
+
+        // Create toast container
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        // Auto-refresh dashboard every 5 minutes
+        setInterval(loadDashboardData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

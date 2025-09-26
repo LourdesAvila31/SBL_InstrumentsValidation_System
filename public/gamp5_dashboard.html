@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAMP 5 - Sistema de Administración</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --gamp-primary: #2c5aa0;
+            --gamp-secondary: #34495e;
+            --gamp-success: #27ae60;
+            --gamp-warning: #f39c12;
+            --gamp-danger: #e74c3c;
+            --gamp-info: #3498db;
+            --gamp-light: #ecf0f1;
+            --gamp-dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--gamp-primary) !important;
+        }
+
+        .nav-pills .nav-link {
+            color: var(--gamp-secondary);
+            margin-right: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: var(--gamp-primary);
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background-color: var(--gamp-light);
+            border-bottom: 1px solid #dee2e6;
+            font-weight: 600;
+        }
+
+        .metric-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--gamp-primary);
+        }
+
+        .metric-label {
+            color: var(--gamp-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active { background-color: var(--gamp-success); }
+        .status-warning { background-color: var(--gamp-warning); }
+        .status-critical { background-color: var(--gamp-danger); }
+        .status-inactive { background-color: #95a5a6; }
+
+        .compliance-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+        }
+
+        .badge-compliant {
+            background-color: var(--gamp-success);
+            color: white;
+        }
+
+        .badge-non-compliant {
+            background-color: var(--gamp-danger);
+            color: white;
+        }
+
+        .badge-pending {
+            background-color: var(--gamp-warning);
+            color: white;
+        }
+
+        .activity-item {
+            padding: 0.75rem;
+            border-left: 3px solid var(--gamp-info);
+            margin-bottom: 0.5rem;
+            background-color: white;
+            border-radius: 0 0.375rem 0.375rem 0;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .alert-item {
+            border-left: 4px solid var(--gamp-warning);
+            padding: 1rem;
+            background-color: #fff8f0;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert-critical {
+            border-left-color: var(--gamp-danger);
+            background-color: #fdf2f2;
+        }
+
+        .kpi-progress {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #e9ecef;
+            overflow: hidden;
+        }
+
+        .kpi-progress-bar {
+            height: 100%;
+            background-color: var(--gamp-success);
+            transition: width 0.3s ease;
+        }
+
+        .module-nav {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        .btn-gamp {
+            background-color: var(--gamp-primary);
+            border-color: var(--gamp-primary);
+            color: white;
+        }
+
+        .btn-gamp:hover {
+            background-color: #1e3d6f;
+            border-color: #1e3d6f;
+            color: white;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .system-health {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .gxp-compliance-indicator {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .compliance-score {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .metric-value {
+                font-size: 2rem;
+            }
+            
+            .module-nav {
+                text-align: center;
+            }
+            
+            .nav-pills {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-shield-alt"></i>
+                GAMP 5 Sistema de Administración
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="nav-link">
+                    <i class="fas fa-user"></i>
+                    <span id="current-user">Usuario</span>
+                </span>
+                <a class="nav-link" href="#" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Salir
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Navegación de Módulos -->
+        <div class="module-nav">
+            <ul class="nav nav-pills" id="module-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="dashboard-tab" data-bs-toggle="pill" 
+                            data-bs-target="#dashboard" type="button" role="tab">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="lifecycle-tab" data-bs-toggle="pill" 
+                            data-bs-target="#lifecycle" type="button" role="tab">
+                        <i class="fas fa-project-diagram"></i>
+                        Ciclo de Vida
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="qualification-tab" data-bs-toggle="pill" 
+                            data-bs-target="#qualification" type="button" role="tab">
+                        <i class="fas fa-certificate"></i>
+                        Calificación
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="validation-tab" data-bs-toggle="pill" 
+                            data-bs-target="#validation" type="button" role="tab">
+                        <i class="fas fa-check-double"></i>
+                        Validación
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="changes-tab" data-bs-toggle="pill" 
+                            data-bs-target="#changes" type="button" role="tab">
+                        <i class="fas fa-exchange-alt"></i>
+                        Gestión de Cambios
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="monitoring-tab" data-bs-toggle="pill" 
+                            data-bs-target="#monitoring" type="button" role="tab">
+                        <i class="fas fa-chart-line"></i>
+                        Monitoreo
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Contenido de los Módulos -->
+        <div class="tab-content" id="module-content">
+            
+            <!-- Dashboard Principal -->
+            <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                <div class="row">
+                    <!-- Sistema de Salud General -->
+                    <div class="col-12">
+                        <div class="system-health fade-in">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h2><i class="fas fa-heartbeat"></i> Estado General del Sistema</h2>
+                                    <p class="mb-0">Todos los sistemas operando normalmente. Última verificación: <span id="last-check-time">--</span></p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="gxp-compliance-indicator">
+                                        <div class="compliance-score" id="overall-compliance">98.5</div>
+                                        <div>Cumplimiento GxP</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Métricas Principales -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card metric-card fade-in">
+                            <div class="metric-value" id="active-systems">--</div>
+                            <div class="metric-label">Sistemas Activos</div>
+                            <div class="mt-2">
+                                <small class="text-success">
+                                    <i class="fas fa-arrow-up"></i> 
+                                    +2 este mes
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card metric-card fade-in">
+                            <div class="metric-value text-success" id="validation-success-rate">--</div>
+                            <div class="metric-label">Tasa de Éxito Validación</div>
+                            <div class="kpi-progress mt-2">
+                                <div class="kpi-progress-bar" id="validation-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card metric-card fade-in">
+                            <div class="metric-value text-info" id="active-qualifications">--</div>
+                            <div class="metric-label">Calificaciones Activas</div>
+                            <div class="mt-2">
+                                <small class="text-info">
+                                    <i class="fas fa-clock"></i> 
+                                    3 IQ, 2 OQ, 1 PQ
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card metric-card fade-in">
+                            <div class="metric-value text-warning" id="pending-changes">--</div>
+                            <div class="metric-label">Cambios Pendientes</div>
+                            <div class="mt-2">
+                                <small class="text-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> 
+                                    2 críticos
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <!-- Actividad Reciente -->
+                    <div class="col-lg-6">
+                        <div class="card fade-in">
+                            <div class="card-header">
+                                <h5><i class="fas fa-history"></i> Actividad Reciente</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="recent-activity">
+                                    <div class="loading-spinner">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        Cargando actividad...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alertas Activas -->
+                    <div class="col-lg-6">
+                        <div class="card fade-in">
+                            <div class="card-header">
+                                <h5><i class="fas fa-exclamation-circle"></i> Alertas Activas</h5>
+                                <span class="badge bg-warning" id="alert-count">--</span>
+                            </div>
+                            <div class="card-body">
+                                <div id="active-alerts">
+                                    <div class="loading-spinner">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        Cargando alertas...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <!-- Gráfico de Tendencias -->
+                    <div class="col-lg-8">
+                        <div class="card fade-in">
+                            <div class="card-header">
+                                <h5><i class="fas fa-chart-area"></i> Tendencias de Rendimiento</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="performance-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPIs de Cumplimiento -->
+                    <div class="col-lg-4">
+                        <div class="card fade-in">
+                            <div class="card-header">
+                                <h5><i class="fas fa-clipboard-check"></i> KPIs de Cumplimiento</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="compliance-kpis">
+                                    <div class="loading-spinner">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        Cargando KPIs...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Módulo de Ciclo de Vida -->
+            <div class="tab-pane fade" id="lifecycle" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-project-diagram"></i> Gestión del Ciclo de Vida del Sistema</h5>
+                        <button class="btn btn-gamp btn-sm float-end" onclick="createNewLifecycle()">
+                            <i class="fas fa-plus"></i> Nuevo Sistema
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="lifecycle-content">
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Cargando sistemas...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Módulo de Calificación -->
+            <div class="tab-pane fade" id="qualification" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-certificate"></i> Calificación de Procesos (IQ/OQ/PQ)</h5>
+                        <button class="btn btn-gamp btn-sm float-end" onclick="createNewQualification()">
+                            <i class="fas fa-plus"></i> Nueva Calificación
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="qualification-content">
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Cargando calificaciones...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Módulo de Validación -->
+            <div class="tab-pane fade" id="validation" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-check-double"></i> Validación de Sistemas</h5>
+                        <button class="btn btn-gamp btn-sm float-end" onclick="createNewValidation()">
+                            <i class="fas fa-plus"></i> Nueva Validación
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="validation-content">
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Cargando validaciones...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Módulo de Gestión de Cambios -->
+            <div class="tab-pane fade" id="changes" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-exchange-alt"></i> Gestión de Cambios</h5>
+                        <button class="btn btn-gamp btn-sm float-end" onclick="createNewChange()">
+                            <i class="fas fa-plus"></i> Nuevo Cambio
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="changes-content">
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Cargando cambios...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Módulo de Monitoreo -->
+            <div class="tab-pane fade" id="monitoring" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line"></i> Monitoreo Continuo</h5>
+                        <button class="btn btn-gamp btn-sm float-end" onclick="refreshMonitoring()">
+                            <i class="fas fa-sync-alt"></i> Actualizar
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="monitoring-content">
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Cargando monitoreo...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    
+    <script>
+        // Variables globales
+        let currentModule = 'dashboard';
+        let refreshInterval;
+        let performanceChart;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeGAMP5Dashboard();
+            loadDashboardData();
+            
+            // Configurar actualización automática cada 30 segundos
+            refreshInterval = setInterval(refreshDashboard, 30000);
+            
+            // Event listeners para las pestañas
+            document.querySelectorAll('[data-bs-toggle="pill"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function (e) {
+                    currentModule = e.target.getAttribute('data-bs-target').substring(1);
+                    loadModuleContent(currentModule);
+                });
+            });
+        });
+
+        /**
+         * Inicialización del dashboard GAMP 5
+         */
+        function initializeGAMP5Dashboard() {
+            // Verificar autenticación
+            if (!isAuthenticated()) {
+                window.location.href = '/login';
+                return;
+            }
+
+            // Configurar usuario actual
+            loadCurrentUser();
+            
+            // Inicializar gráficos
+            initializeCharts();
+            
+            console.log('GAMP 5 Dashboard inicializado correctamente');
+        }
+
+        /**
+         * Carga los datos principales del dashboard
+         */
+        async function loadDashboardData() {
+            try {
+                showLoading('dashboard');
+                
+                const response = await fetch('/app/Modules/Internal/GAMP5/GAMP5Dashboard.php?module=dashboard&action=dashboard');
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateDashboardMetrics(result.data.overview);
+                    updateRecentActivity(result.data.recent_activity);
+                    updateActiveAlerts(result.data.alerts);
+                    updateKPIs(result.data.kpis);
+                    updateComplianceStatus(result.data.compliance_status);
+                    updatePerformanceChart();
+                    
+                    document.getElementById('last-check-time').textContent = 
+                        moment(result.data.timestamp).format('DD/MM/YYYY HH:mm:ss');
+                } else {
+                    showError('Error al cargar datos del dashboard');
+                }
+                
+                hideLoading('dashboard');
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showError('Error de conexión al cargar el dashboard');
+                hideLoading('dashboard');
+            }
+        }
+
+        /**
+         * Actualiza las métricas principales del dashboard
+         */
+        function updateDashboardMetrics(overview) {
+            document.getElementById('active-systems').textContent = overview.system_lifecycle.active_systems;
+            document.getElementById('validation-success-rate').textContent = overview.validations.compliance_rate + '%';
+            document.getElementById('active-qualifications').textContent = overview.qualifications.active_qualifications;
+            document.getElementById('pending-changes').textContent = overview.change_management.open_changes;
+            
+            // Actualizar barra de progreso de validación
+            const validationProgress = document.getElementById('validation-progress');
+            validationProgress.style.width = overview.validations.compliance_rate + '%';
+        }
+
+        /**
+         * Actualiza la actividad reciente
+         */
+        function updateRecentActivity(activities) {
+            const container = document.getElementById('recent-activity');
+            container.innerHTML = '';
+            
+            activities.forEach(activity => {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                item.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>${activity.activity}</strong><br>
+                            <small class="text-muted">por ${activity.user}</small>
+                        </div>
+                        <div class="activity-time">
+                            ${moment(activity.timestamp).fromNow()}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        /**
+         * Actualiza las alertas activas
+         */
+        function updateActiveAlerts(alerts) {
+            const container = document.getElementById('active-alerts');
+            const alertCount = document.getElementById('alert-count');
+            
+            container.innerHTML = '';
+            alertCount.textContent = alerts.length;
+            
+            if (alerts.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted">No hay alertas activas</div>';
+                return;
+            }
+            
+            alerts.forEach(alert => {
+                const item = document.createElement('div');
+                item.className = `alert-item ${alert.severity === 'CRITICAL' ? 'alert-critical' : ''}`;
+                item.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>${alert.title}</strong><br>
+                            <small class="text-muted">${alert.type} - ${moment(alert.created_at).fromNow()}</small>
+                        </div>
+                        <span class="badge bg-${getSeverityColor(alert.severity)}">${alert.severity}</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        /**
+         * Actualiza los KPIs de cumplimiento
+         */
+        function updateKPIs(kpis) {
+            const container = document.getElementById('compliance-kpis');
+            container.innerHTML = '';
+            
+            const kpiItems = [
+                { label: 'Cumplimiento GxP', value: kpis.gxp_compliance_rate, unit: '%' },
+                { label: 'Disponibilidad Sistema', value: kpis.system_availability, unit: '%' },
+                { label: 'Éxito de Cambios', value: kpis.change_success_rate, unit: '%' },
+                { label: 'Integridad de Datos', value: kpis.data_integrity_score, unit: '%' },
+                { label: 'MTTR', value: kpis.mttr, unit: ' min' }
+            ];
+            
+            kpiItems.forEach(kpi => {
+                const item = document.createElement('div');
+                item.className = 'mb-3';
+                item.innerHTML = `
+                    <div class="d-flex justify-content-between">
+                        <span>${kpi.label}</span>
+                        <strong>${kpi.value}${kpi.unit}</strong>
+                    </div>
+                    <div class="kpi-progress">
+                        <div class="kpi-progress-bar" style="width: ${Math.min(kpi.value, 100)}%"></div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+            
+            // Actualizar cumplimiento general
+            document.getElementById('overall-compliance').textContent = kpis.gxp_compliance_rate + '%';
+        }
+
+        /**
+         * Inicializa los gráficos
+         */
+        function initializeCharts() {
+            const ctx = document.getElementById('performance-chart').getContext('2d');
+            
+            performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Disponibilidad del Sistema (%)',
+                        data: [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.1
+                    }, {
+                        label: 'Cumplimiento GxP (%)',
+                        data: [],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        /**
+         * Actualiza el gráfico de rendimiento
+         */
+        function updatePerformanceChart() {
+            // Datos simulados - en producción vendrían del backend
+            const labels = [];
+            const availabilityData = [];
+            const complianceData = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                labels.push(moment().subtract(i, 'days').format('DD/MM'));
+                availabilityData.push(99.5 + Math.random() * 0.5);
+                complianceData.push(98 + Math.random() * 2);
+            }
+            
+            performanceChart.data.labels = labels;
+            performanceChart.data.datasets[0].data = availabilityData;
+            performanceChart.data.datasets[1].data = complianceData;
+            performanceChart.update();
+        }
+
+        /**
+         * Carga el contenido de un módulo específico
+         */
+        async function loadModuleContent(module) {
+            if (module === 'dashboard') {
+                loadDashboardData();
+                return;
+            }
+            
+            const contentContainer = document.getElementById(`${module}-content`);
+            showLoading(module);
+            
+            try {
+                let endpoint = '';
+                switch (module) {
+                    case 'lifecycle':
+                        endpoint = `/app/Modules/Internal/GAMP5/GAMP5Dashboard.php?module=lifecycle&action=list`;
+                        break;
+                    case 'qualification':
+                        endpoint = `/app/Modules/Internal/GAMP5/GAMP5Dashboard.php?module=qualification&action=list`;
+                        break;
+                    case 'validation':
+                        endpoint = `/app/Modules/Internal/GAMP5/GAMP5Dashboard.php?module=validation&action=list`;
+                        break;
+                    case 'changes':
+                        endpoint = `/app/Modules/Internal/GAMP5/GAMP5Dashboard.php?module=changes&action=list`;
+                        break;
+                    case 'monitoring':
+                        endpoint = `/app/Modules/Internal/GAMP5/GAMP5Dashboard.php?module=monitoring&action=system_status`;
+                        break;
+                }
+                
+                const response = await fetch(endpoint);
+                const result = await response.json();
+                
+                if (result.success) {
+                    renderModuleContent(module, result.data);
+                } else {
+                    showError(`Error al cargar ${module}: ${result.error}`);
+                }
+                
+                hideLoading(module);
+            } catch (error) {
+                console.error(`Error loading ${module}:`, error);
+                showError(`Error de conexión al cargar ${module}`);
+                hideLoading(module);
+            }
+        }
+
+        /**
+         * Renderiza el contenido de un módulo
+         */
+        function renderModuleContent(module, data) {
+            const container = document.getElementById(`${module}-content`);
+            
+            switch (module) {
+                case 'lifecycle':
+                    renderLifecycleContent(container, data);
+                    break;
+                case 'qualification':
+                    renderQualificationContent(container, data);
+                    break;
+                case 'validation':
+                    renderValidationContent(container, data);
+                    break;
+                case 'changes':
+                    renderChangesContent(container, data);
+                    break;
+                case 'monitoring':
+                    renderMonitoringContent(container, data);
+                    break;
+            }
+        }
+
+        /**
+         * Renderiza el contenido del módulo de ciclo de vida
+         */
+        function renderLifecycleContent(container, systems) {
+            if (!systems || systems.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted">No hay sistemas registrados</div>';
+                return;
+            }
+            
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Sistema</th>
+                                <th>Etapa Actual</th>
+                                <th>Estado</th>
+                                <th>Progreso</th>
+                                <th>Próxima Verificación</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            systems.forEach(system => {
+                html += `
+                    <tr>
+                        <td>
+                            <strong>${system.system_name}</strong><br>
+                            <small class="text-muted">${system.description}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">${system.current_stage}</span>
+                        </td>
+                        <td>
+                            <span class="status-indicator status-${system.status.toLowerCase()}"></span>
+                            ${system.status}
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar" style="width: ${system.completion_percentage}%"></div>
+                            </div>
+                            <small>${system.completion_percentage}%</small>
+                        </td>
+                        <td>${moment(system.next_verification).format('DD/MM/YYYY')}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewLifecycleDetails('${system.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" onclick="updateLifecycleStage('${system.id}')">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        // Funciones auxiliares
+        function showLoading(module) {
+            const container = document.getElementById(`${module}-content`) || 
+                           document.querySelector(`#${module} .loading-spinner`);
+            if (container) {
+                const spinner = container.querySelector('.loading-spinner');
+                if (spinner) spinner.style.display = 'block';
+            }
+        }
+
+        function hideLoading(module) {
+            const container = document.getElementById(`${module}-content`) || 
+                           document.querySelector(`#${module} .loading-spinner`);
+            if (container) {
+                const spinner = container.querySelector('.loading-spinner');
+                if (spinner) spinner.style.display = 'none';
+            }
+        }
+
+        function showError(message) {
+            // Implementar sistema de notificaciones
+            console.error(message);
+            alert(message); // Temporal - reemplazar con toast/modal
+        }
+
+        function getSeverityColor(severity) {
+            switch (severity) {
+                case 'CRITICAL': return 'danger';
+                case 'WARNING': return 'warning';
+                case 'MINOR': return 'info';
+                default: return 'secondary';
+            }
+        }
+
+        function isAuthenticated() {
+            // Verificar autenticación - implementar según sistema de autenticación
+            return true; // Temporal
+        }
+
+        function loadCurrentUser() {
+            // Cargar información del usuario actual
+            document.getElementById('current-user').textContent = 'Administrador GAMP 5';
+        }
+
+        function refreshDashboard() {
+            if (currentModule === 'dashboard') {
+                loadDashboardData();
+            }
+        }
+
+        function logout() {
+            if (confirm('¿Está seguro que desea cerrar sesión?')) {
+                window.location.href = '/logout';
+            }
+        }
+
+        // Funciones placeholder para las acciones de los módulos
+        function createNewLifecycle() { console.log('Create new lifecycle'); }
+        function createNewQualification() { console.log('Create new qualification'); }
+        function createNewValidation() { console.log('Create new validation'); }
+        function createNewChange() { console.log('Create new change'); }
+        function refreshMonitoring() { console.log('Refresh monitoring'); }
+        function viewLifecycleDetails(id) { console.log('View lifecycle details:', id); }
+        function updateLifecycleStage(id) { console.log('Update lifecycle stage:', id); }
+        
+        // Renderizado de contenido para otros módulos (placeholder)
+        function renderQualificationContent(container, data) {
+            container.innerHTML = '<div class="text-center">Módulo de Calificación - En desarrollo</div>';
+        }
+        
+        function renderValidationContent(container, data) {
+            container.innerHTML = '<div class="text-center">Módulo de Validación - En desarrollo</div>';
+        }
+        
+        function renderChangesContent(container, data) {
+            container.innerHTML = '<div class="text-center">Módulo de Gestión de Cambios - En desarrollo</div>';
+        }
+        
+        function renderMonitoringContent(container, data) {
+            container.innerHTML = '<div class="text-center">Módulo de Monitoreo - En desarrollo</div>';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Retiro de Sistema Computarizado - GAMP 5</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .retirement-header {
+            background: linear-gradient(135deg, #dc3545, #6f42c1);
+            color: white;
+            padding: 2rem 0;
+        }
+        
+        .process-step {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .process-step.active {
+            border-color: #0d6efd;
+            background-color: #f8f9ff;
+        }
+        
+        .process-step.completed {
+            border-color: #198754;
+            background-color: #f0f8f5;
+        }
+        
+        .step-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+        
+        .step-icon.pending {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+        
+        .step-icon.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        
+        .step-icon.completed {
+            background-color: #198754;
+            color: white;
+        }
+        
+        .progress-bar-custom {
+            height: 8px;
+            border-radius: 4px;
+        }
+        
+        .card-retirement {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        
+        .card-retirement:hover {
+            transform: translateY(-2px);
+        }
+        
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .status-planning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-migration {
+            background-color: #cce5ff;
+            color: #0066cc;
+        }
+        
+        .status-destruction {
+            background-color: #ffe6e6;
+            color: #cc0000;
+        }
+        
+        .status-verification {
+            background-color: #e6f3ff;
+            color: #0066cc;
+        }
+        
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .retirement-form {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-divider {
+            border-left: 4px solid #0d6efd;
+            padding-left: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .data-source-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .verification-item {
+            padding: 1rem;
+            border-left: 4px solid #28a745;
+            background: #f8fff9;
+            margin-bottom: 1rem;
+        }
+        
+        .verification-item.failed {
+            border-left-color: #dc3545;
+            background: #fff8f8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="retirement-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-0">
+                        <i class="fas fa-power-off me-3"></i>
+                        Sistema de Retiro de Sistema Computarizado
+                    </h1>
+                    <p class="mb-0 mt-2 opacity-75">
+                        Proceso controlado conforme a GAMP 5 y normativas GxP
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button class="btn btn-light" onclick="showHelp()">
+                            <i class="fas fa-question-circle"></i> Ayuda
+                        </button>
+                        <button class="btn btn-warning" onclick="exportCompliance()">
+                            <i class="fas fa-download"></i> Reporte
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <!-- Process Overview -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card card-retirement">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-tasks me-2"></i>
+                            Progreso del Proceso de Retiro
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="processSteps">
+                            <!-- Los pasos se cargarán dinámicamente -->
+                        </div>
+                        <div class="mt-3">
+                            <div class="progress progress-bar-custom">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 0%" id="overallProgress">
+                                    <span class="visually-hidden">0% Complete</span>
+                                </div>
+                            </div>
+                            <small class="text-muted mt-1 d-block">Progreso general del proceso</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Tabs -->
+        <div class="row">
+            <div class="col-12">
+                <nav>
+                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                        <button class="nav-link active" id="nav-initiate-tab" data-bs-toggle="tab" data-bs-target="#nav-initiate" type="button" role="tab">
+                            <i class="fas fa-play-circle me-2"></i>Iniciar Retiro
+                        </button>
+                        <button class="nav-link" id="nav-migrate-tab" data-bs-toggle="tab" data-bs-target="#nav-migrate" type="button" role="tab">
+                            <i class="fas fa-database me-2"></i>Migrar Datos
+                        </button>
+                        <button class="nav-link" id="nav-destroy-tab" data-bs-toggle="tab" data-bs-target="#nav-destroy" type="button" role="tab">
+                            <i class="fas fa-trash-alt me-2"></i>Destruir Datos
+                        </button>
+                        <button class="nav-link" id="nav-verify-tab" data-bs-toggle="tab" data-bs-target="#nav-verify" type="button" role="tab">
+                            <i class="fas fa-check-circle me-2"></i>Verificar
+                        </button>
+                        <button class="nav-link" id="nav-monitor-tab" data-bs-toggle="tab" data-bs-target="#nav-monitor" type="button" role="tab">
+                            <i class="fas fa-chart-line me-2"></i>Monitorear
+                        </button>
+                    </div>
+                </nav>
+
+                <div class="tab-content mt-4" id="nav-tabContent">
+                    <!-- Iniciar Retiro -->
+                    <div class="tab-pane fade show active" id="nav-initiate" role="tabpanel">
+                        <div class="retirement-form">
+                            <h4 class="text-primary mb-4">
+                                <i class="fas fa-rocket me-2"></i>
+                                Planificación del Retiro del Sistema
+                            </h4>
+                            
+                            <form id="retirementForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="systemName" class="form-label">Nombre del Sistema *</label>
+                                            <input type="text" class="form-control" id="systemName" required 
+                                                   placeholder="SBL Sistema de Validación de Instrumentos">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="deactivationDate" class="form-label">Fecha de Desactivación *</label>
+                                            <input type="date" class="form-control" id="deactivationDate" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="retirementReason" class="form-label">Motivo del Retiro *</label>
+                                    <textarea class="form-control" id="retirementReason" rows="3" required
+                                              placeholder="Describir las razones del retiro del sistema..."></textarea>
+                                </div>
+
+                                <div class="section-divider">
+                                    <h5>Configuración del Proceso</h5>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="dataMigrationRequired">
+                                                <label class="form-check-label" for="dataMigrationRequired">
+                                                    <strong>Requiere Migración de Datos</strong>
+                                                    <small class="d-block text-muted">Migrar datos críticos antes del retiro</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="dataDestructionRequired" checked>
+                                                <label class="form-check-label" for="dataDestructionRequired">
+                                                    <strong>Requiere Destrucción de Datos</strong>
+                                                    <small class="d-block text-muted">Destrucción segura de datos sensibles</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="estimatedDuration" class="form-label">Duración Estimada (días)</label>
+                                    <input type="number" class="form-control" id="estimatedDuration" min="1" max="365"
+                                           placeholder="30">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="stakeholders" class="form-label">Partes Interesadas</label>
+                                    <input type="text" class="form-control" id="stakeholders" 
+                                           placeholder="admin@empresa.com, qa@empresa.com">
+                                    <small class="form-text text-muted">Separar emails con comas</small>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="riskAssessment" class="form-label">Evaluación de Riesgos</label>
+                                    <textarea class="form-control" id="riskAssessment" rows="4"
+                                              placeholder="Describir los riesgos identificados y medidas de mitigación..."></textarea>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-play me-2"></i>
+                                        Iniciar Proceso de Retiro
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Migrar Datos -->
+                    <div class="tab-pane fade" id="nav-migrate" role="tabpanel">
+                        <div class="retirement-form">
+                            <h4 class="text-primary mb-4">
+                                <i class="fas fa-database me-2"></i>
+                                Migración de Datos Críticos
+                            </h4>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Configure las fuentes de datos que necesitan ser migradas antes del retiro del sistema.
+                            </div>
+
+                            <form id="migrationForm">
+                                <div class="mb-4">
+                                    <label class="form-label">Fuentes de Datos a Migrar</label>
+                                    <div id="dataSources">
+                                        <div class="data-source-item">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-3">
+                                                    <select class="form-select" name="sourceType[]" required>
+                                                        <option value="">Seleccionar tipo</option>
+                                                        <option value="database">Base de Datos</option>
+                                                        <option value="files">Archivos</option>
+                                                        <option value="configuration">Configuración</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <input type="text" class="form-control" name="sourceName[]" 
+                                                           placeholder="Nombre de la fuente" required>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <input type="text" class="form-control" name="sourcePath[]" 
+                                                           placeholder="Ruta o conexión">
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeDataSource(this)">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary mt-2" onclick="addDataSource()">
+                                        <i class="fas fa-plus me-2"></i>Agregar Fuente
+                                    </button>
+                                </div>
+
+                                <div class="section-divider">
+                                    <h5>Configuración de Migración</h5>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="targetPath" class="form-label">Ruta de Destino *</label>
+                                            <input type="text" class="form-control" id="targetPath" required
+                                                   value="/backup/retirement_migration" placeholder="/backup/retirement_migration">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-check mt-4">
+                                                <input class="form-check-input" type="checkbox" id="compressionEnabled" checked>
+                                                <label class="form-check-label" for="compressionEnabled">
+                                                    Habilitar Compresión
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="encryptionEnabled" checked>
+                                                <label class="form-check-label" for="encryptionEnabled">
+                                                    Habilitar Encriptación
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-success btn-lg" id="migrationBtn">
+                                        <i class="fas fa-download me-2"></i>
+                                        Ejecutar Migración de Datos
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Migration Progress -->
+                            <div id="migrationProgress" class="mt-4" style="display: none;">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Progreso de Migración</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                 role="progressbar" style="width: 0%" id="migrationProgressBar"></div>
+                                        </div>
+                                        <div id="migrationStatus">Iniciando migración...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Destruir Datos -->
+                    <div class="tab-pane fade" id="nav-destroy" role="tabpanel">
+                        <div class="retirement-form">
+                            <h4 class="text-primary mb-4">
+                                <i class="fas fa-trash-alt me-2"></i>
+                                Destrucción Segura de Datos
+                            </h4>
+
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>¡Atención!</strong> La destrucción de datos es irreversible. Asegúrese de haber completado la migración antes de proceder.
+                            </div>
+
+                            <form id="destructionForm">
+                                <div class="mb-4">
+                                    <label class="form-label">Objetivos de Destrucción</label>
+                                    <div id="destructionTargets">
+                                        <div class="data-source-item">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-4">
+                                                    <input type="text" class="form-control" name="targetName[]" 
+                                                           placeholder="Nombre del objetivo" required>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <input type="text" class="form-control" name="targetPath[]" 
+                                                           placeholder="Ruta o ubicación" required>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <select class="form-select" name="targetType[]" required>
+                                                        <option value="">Tipo de objetivo</option>
+                                                        <option value="database">Base de Datos</option>
+                                                        <option value="files">Archivos</option>
+                                                        <option value="disk">Disco Completo</option>
+                                                        <option value="partition">Partición</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeTarget(this)">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary mt-2" onclick="addTarget()">
+                                        <i class="fas fa-plus me-2"></i>Agregar Objetivo
+                                    </button>
+                                </div>
+
+                                <div class="section-divider">
+                                    <h5>Método de Destrucción</h5>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="destructionMethod" class="form-label">Método *</label>
+                                            <select class="form-select" id="destructionMethod" required>
+                                                <option value="SECURE_WIPE">Borrado Seguro (DBAN)</option>
+                                                <option value="CRYPTOGRAPHIC_ERASE">Borrado Criptográfico</option>
+                                                <option value="PHYSICAL_DESTRUCTION">Destrucción Física</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="wipePasses" class="form-label">Número de Pasadas</label>
+                                            <input type="number" class="form-control" id="wipePasses" min="1" max="35" value="3">
+                                            <small class="form-text text-muted">Recomendado: 3 pasadas mínimo</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="verificationRequired" checked>
+                                            <label class="form-check-label" for="verificationRequired">
+                                                Verificación Post-Destrucción Requerida
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="certificateRequired" checked>
+                                            <label class="form-check-label" for="certificateRequired">
+                                                Generar Certificado de Destrucción
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-danger btn-lg" id="destructionBtn">
+                                        <i class="fas fa-trash me-2"></i>
+                                        Ejecutar Destrucción de Datos
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Destruction Progress -->
+                            <div id="destructionProgress" class="mt-4" style="display: none;">
+                                <div class="card">
+                                    <div class="card-header bg-danger text-white">
+                                        <h6 class="mb-0">Progreso de Destrucción</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" 
+                                                 role="progressbar" style="width: 0%" id="destructionProgressBar"></div>
+                                        </div>
+                                        <div id="destructionStatus">Iniciando destrucción segura...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verificar -->
+                    <div class="tab-pane fade" id="nav-verify" role="tabpanel">
+                        <div class="retirement-form">
+                            <h4 class="text-primary mb-4">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Verificación Post-Retiro
+                            </h4>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Ejecute las verificaciones necesarias para confirmar que el proceso de retiro se completó correctamente.
+                            </div>
+
+                            <div class="d-grid mb-4">
+                                <button type="button" class="btn btn-primary btn-lg" onclick="executeVerification()">
+                                    <i class="fas fa-play me-2"></i>
+                                    Ejecutar Verificación Post-Retiro
+                                </button>
+                            </div>
+
+                            <!-- Verification Results -->
+                            <div id="verificationResults" style="display: none;">
+                                <div class="section-divider">
+                                    <h5>Resultados de Verificación</h5>
+                                </div>
+                                <div id="verificationItems">
+                                    <!-- Se llenarán dinámicamente -->
+                                </div>
+                            </div>
+
+                            <!-- Approval Section -->
+                            <div id="approvalSection" class="mt-4" style="display: none;">
+                                <div class="section-divider">
+                                    <h5>Aprobación Final</h5>
+                                </div>
+                                
+                                <form id="approvalForm">
+                                    <div class="mb-3">
+                                        <label for="approvalType" class="form-label">Tipo de Aprobación</label>
+                                        <select class="form-select" id="approvalType" required>
+                                            <option value="FINAL_APPROVAL">Aprobación Final</option>
+                                            <option value="QA_APPROVAL">Aprobación de Calidad</option>
+                                            <option value="TECHNICAL_APPROVAL">Aprobación Técnica</option>
+                                            <option value="MANAGEMENT_APPROVAL">Aprobación Gerencial</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="approvalComments" class="form-label">Comentarios</label>
+                                        <textarea class="form-control" id="approvalComments" rows="3"
+                                                  placeholder="Comentarios sobre la aprobación..."></textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="digitalSignature" class="form-label">Firma Digital</label>
+                                        <input type="password" class="form-control" id="digitalSignature" 
+                                               placeholder="Ingrese su firma digital">
+                                        <small class="form-text text-muted">Su contraseña actuará como firma digital</small>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-success btn-lg">
+                                            <i class="fas fa-signature me-2"></i>
+                                            Aprobar Proceso de Retiro
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monitorear -->
+                    <div class="tab-pane fade" id="nav-monitor" role="tabpanel">
+                        <div class="retirement-form">
+                            <h4 class="text-primary mb-4">
+                                <i class="fas fa-chart-line me-2"></i>
+                                Monitoreo y Reportes
+                            </h4>
+
+                            <!-- Active Processes -->
+                            <div class="mb-4">
+                                <h5>Procesos Activos</h5>
+                                <div id="activeProcesses">
+                                    <!-- Se llenarán dinámicamente -->
+                                </div>
+                            </div>
+
+                            <!-- Reports Section -->
+                            <div class="section-divider">
+                                <h5>Generación de Reportes</h5>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                                            <h6>Reporte de Cumplimiento</h6>
+                                            <p class="text-muted small">Reporte completo de cumplimiento GAMP 5</p>
+                                            <button class="btn btn-outline-danger" onclick="generateReport('compliance')">
+                                                <i class="fas fa-download me-2"></i>Generar PDF
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-file-csv fa-3x text-success mb-3"></i>
+                                            <h6>Datos de Auditoría</h6>
+                                            <p class="text-muted small">Trail de auditoría completo del proceso</p>
+                                            <button class="btn btn-outline-success" onclick="generateReport('audit')">
+                                                <i class="fas fa-download me-2"></i>Generar CSV
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <h5 id="loadingMessage">Procesando solicitud...</h5>
+                    <p class="text-muted mb-0" id="loadingDetail">Por favor espere mientras se completa la operación</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variables globales
+        let currentRetirementId = null;
+        let currentProcess = null;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProcessSteps();
+            loadActiveProcesses();
+            setupFormHandlers();
+            
+            // Establecer fecha mínima como mañana
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('deactivationDate').min = tomorrow.toISOString().split('T')[0];
+        });
+
+        // Configurar manejadores de formularios
+        function setupFormHandlers() {
+            // Formulario de inicio de retiro
+            document.getElementById('retirementForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                initiateRetirement();
+            });
+
+            // Formulario de migración
+            document.getElementById('migrationForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                executeMigration();
+            });
+
+            // Formulario de destrucción
+            document.getElementById('destructionForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                executeDestruction();
+            });
+
+            // Formulario de aprobación
+            document.getElementById('approvalForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                approveRetirement();
+            });
+        }
+
+        // Cargar pasos del proceso
+        function loadProcessSteps() {
+            const steps = [
+                { id: 'planning', name: 'Planificación', icon: 'fas fa-clipboard-list', status: 'pending' },
+                { id: 'migration', name: 'Migración', icon: 'fas fa-database', status: 'pending' },
+                { id: 'destruction', name: 'Destrucción', icon: 'fas fa-trash-alt', status: 'pending' },
+                { id: 'verification', name: 'Verificación', icon: 'fas fa-check-circle', status: 'pending' },
+                { id: 'completion', name: 'Completado', icon: 'fas fa-flag-checkered', status: 'pending' }
+            ];
+
+            const container = document.getElementById('processSteps');
+            container.innerHTML = '';
+
+            steps.forEach(step => {
+                const stepHtml = `
+                    <div class="col-md-2 mb-3">
+                        <div class="process-step ${step.status}" id="step-${step.id}">
+                            <div class="d-flex align-items-center">
+                                <div class="step-icon ${step.status}">
+                                    <i class="${step.icon}"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">${step.name}</h6>
+                                    <small class="text-muted">Pendiente</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += stepHtml;
+            });
+        }
+
+        // Iniciar proceso de retiro
+        async function initiateRetirement() {
+            showLoading('Iniciando proceso de retiro...', 'Validando datos y creando proceso');
+
+            const formData = {
+                systemName: document.getElementById('systemName').value,
+                retirementReason: document.getElementById('retirementReason').value,
+                deactivationDate: document.getElementById('deactivationDate').value,
+                dataMigrationRequired: document.getElementById('dataMigrationRequired').checked,
+                dataDestructionRequired: document.getElementById('dataDestructionRequired').checked,
+                estimatedDuration: document.getElementById('estimatedDuration').value || null,
+                stakeholders: document.getElementById('stakeholders').value.split(',').filter(s => s.trim()),
+                riskAssessment: document.getElementById('riskAssessment').value
+            };
+
+            try {
+                const response = await fetch('/api/retirement/initiate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    currentRetirementId = result.data.retirement_id;
+                    updateStepStatus('planning', 'completed');
+                    updateOverallProgress(20);
+                    
+                    showSuccess('Proceso de retiro iniciado correctamente', 
+                               `ID del proceso: ${currentRetirementId}`);
+                    
+                    // Habilitar siguiente tab
+                    enableTab('nav-migrate-tab');
+                } else {
+                    showError('Error al iniciar proceso', result.error);
+                }
+            } catch (error) {
+                showError('Error de conexión', error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Ejecutar migración de datos
+        async function executeMigration() {
+            if (!currentRetirementId) {
+                showError('Error', 'Debe iniciar un proceso de retiro primero');
+                return;
+            }
+
+            showLoading('Ejecutando migración de datos...', 'Migrando fuentes de datos seleccionadas');
+
+            // Recopilar fuentes de datos
+            const dataSources = [];
+            const sourceTypes = document.querySelectorAll('select[name="sourceType[]"]');
+            const sourceNames = document.querySelectorAll('input[name="sourceName[]"]');
+            const sourcePaths = document.querySelectorAll('input[name="sourcePath[]"]');
+
+            for (let i = 0; i < sourceTypes.length; i++) {
+                if (sourceTypes[i].value && sourceNames[i].value) {
+                    dataSources.push({
+                        type: sourceTypes[i].value,
+                        name: sourceNames[i].value,
+                        path: sourcePaths[i].value || ''
+                    });
+                }
+            }
+
+            const migrationConfig = {
+                dataSources: dataSources,
+                targetPath: document.getElementById('targetPath').value,
+                compressionEnabled: document.getElementById('compressionEnabled').checked,
+                encryptionEnabled: document.getElementById('encryptionEnabled').checked,
+                verificationRequired: true
+            };
+
+            try {
+                const response = await fetch(`/api/retirement/${currentRetirementId}/migrate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(migrationConfig)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    updateStepStatus('migration', 'completed');
+                    updateOverallProgress(40);
+                    
+                    showSuccess('Migración completada exitosamente', 
+                               `${result.data.migration_results.length} fuentes migradas`);
+                    
+                    enableTab('nav-destroy-tab');
+                } else {
+                    showError('Error en migración', result.error);
+                }
+            } catch (error) {
+                showError('Error de conexión', error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Ejecutar destrucción de datos
+        async function executeDestruction() {
+            if (!currentRetirementId) {
+                showError('Error', 'Debe iniciar un proceso de retiro primero');
+                return;
+            }
+
+            // Confirmación adicional
+            if (!confirm('¿Está seguro de que desea proceder con la destrucción de datos? Esta acción es IRREVERSIBLE.')) {
+                return;
+            }
+
+            showLoading('Ejecutando destrucción de datos...', 'Destruyendo datos sensibles de forma segura');
+
+            // Recopilar objetivos de destrucción
+            const destructionTargets = [];
+            const targetNames = document.querySelectorAll('input[name="targetName[]"]');
+            const targetPaths = document.querySelectorAll('input[name="targetPath[]"]');
+            const targetTypes = document.querySelectorAll('select[name="targetType[]"]');
+
+            for (let i = 0; i < targetNames.length; i++) {
+                if (targetNames[i].value && targetPaths[i].value && targetTypes[i].value) {
+                    destructionTargets.push({
+                        name: targetNames[i].value,
+                        path: targetPaths[i].value,
+                        type: targetTypes[i].value
+                    });
+                }
+            }
+
+            const destructionConfig = {
+                destructionTargets: destructionTargets,
+                method: document.getElementById('destructionMethod').value,
+                passes: parseInt(document.getElementById('wipePasses').value) || 3,
+                verificationRequired: document.getElementById('verificationRequired').checked,
+                certificateRequired: document.getElementById('certificateRequired').checked
+            };
+
+            try {
+                const response = await fetch(`/api/retirement/${currentRetirementId}/destroy`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(destructionConfig)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    updateStepStatus('destruction', 'completed');
+                    updateOverallProgress(60);
+                    
+                    showSuccess('Destrucción completada exitosamente', 
+                               `${result.data.destruction_results.length} objetivos destruidos`);
+                    
+                    enableTab('nav-verify-tab');
+                } else {
+                    showError('Error en destrucción', result.error);
+                }
+            } catch (error) {
+                showError('Error de conexión', error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Ejecutar verificación
+        async function executeVerification() {
+            if (!currentRetirementId) {
+                showError('Error', 'Debe iniciar un proceso de retiro primero');
+                return;
+            }
+
+            showLoading('Ejecutando verificación post-retiro...', 'Verificando completitud del proceso');
+
+            try {
+                const response = await fetch(`/api/retirement/${currentRetirementId}/verify`, {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    updateStepStatus('verification', 'completed');
+                    updateOverallProgress(80);
+                    
+                    displayVerificationResults(result.data.verification_results);
+                    
+                    if (result.data.all_verified) {
+                        showSuccess('Verificación completada exitosamente', 
+                                   'Todas las verificaciones pasaron correctamente');
+                        document.getElementById('approvalSection').style.display = 'block';
+                    } else {
+                        showWarning('Verificación completada con observaciones', 
+                                   'Algunas verificaciones requieren atención');
+                    }
+                } else {
+                    showError('Error en verificación', result.error);
+                }
+            } catch (error) {
+                showError('Error de conexión', error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Aprobar retiro
+        async function approveRetirement() {
+            if (!currentRetirementId) {
+                showError('Error', 'Debe iniciar un proceso de retiro primero');
+                return;
+            }
+
+            showLoading('Procesando aprobación...', 'Registrando aprobación final');
+
+            const approvalData = {
+                approvalType: document.getElementById('approvalType').value,
+                comments: document.getElementById('approvalComments').value,
+                digitalSignature: document.getElementById('digitalSignature').value
+            };
+
+            try {
+                const response = await fetch(`/api/retirement/${currentRetirementId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(approvalData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    updateStepStatus('completion', 'completed');
+                    updateOverallProgress(100);
+                    
+                    showSuccess('Proceso de retiro aprobado y completado', 
+                               'El proceso ha sido finalizado exitosamente');
+                    
+                    enableTab('nav-monitor-tab');
+                } else {
+                    showError('Error en aprobación', result.error);
+                }
+            } catch (error) {
+                showError('Error de conexión', error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Funciones auxiliares
+        function addDataSource() {
+            const container = document.getElementById('dataSources');
+            const newSource = container.children[0].cloneNode(true);
+            
+            // Limpiar valores
+            newSource.querySelectorAll('input, select').forEach(input => {
+                input.value = '';
+            });
+            
+            container.appendChild(newSource);
+        }
+
+        function removeDataSource(button) {
+            const container = document.getElementById('dataSources');
+            if (container.children.length > 1) {
+                button.closest('.data-source-item').remove();
+            }
+        }
+
+        function addTarget() {
+            const container = document.getElementById('destructionTargets');
+            const newTarget = container.children[0].cloneNode(true);
+            
+            // Limpiar valores
+            newTarget.querySelectorAll('input, select').forEach(input => {
+                input.value = '';
+            });
+            
+            container.appendChild(newTarget);
+        }
+
+        function removeTarget(button) {
+            const container = document.getElementById('destructionTargets');
+            if (container.children.length > 1) {
+                button.closest('.data-source-item').remove();
+            }
+        }
+
+        function updateStepStatus(stepId, status) {
+            const step = document.getElementById(`step-${stepId}`);
+            if (step) {
+                step.className = `process-step ${status}`;
+                const icon = step.querySelector('.step-icon');
+                const statusText = step.querySelector('small');
+                
+                icon.className = `step-icon ${status}`;
+                statusText.textContent = status === 'completed' ? 'Completado' : 
+                                       status === 'active' ? 'En progreso' : 'Pendiente';
+            }
+        }
+
+        function updateOverallProgress(percentage) {
+            const progressBar = document.getElementById('overallProgress');
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = percentage + '% Completado';
+        }
+
+        function enableTab(tabId) {
+            const tab = document.getElementById(tabId);
+            if (tab) {
+                tab.disabled = false;
+                tab.classList.remove('disabled');
+            }
+        }
+
+        function displayVerificationResults(results) {
+            const container = document.getElementById('verificationItems');
+            container.innerHTML = '';
+            
+            Object.entries(results).forEach(([type, result]) => {
+                const isPassed = result.status === 'PASSED';
+                const itemHtml = `
+                    <div class="verification-item ${isPassed ? '' : 'failed'}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">
+                                    <i class="fas fa-${isPassed ? 'check-circle text-success' : 'exclamation-circle text-danger'} me-2"></i>
+                                    ${getVerificationTypeName(type)}
+                                </h6>
+                                <small class="text-muted">${getVerificationDescription(type, result)}</small>
+                            </div>
+                            <span class="badge ${isPassed ? 'bg-success' : 'bg-danger'}">${result.status}</span>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += itemHtml;
+            });
+            
+            document.getElementById('verificationResults').style.display = 'block';
+        }
+
+        function getVerificationTypeName(type) {
+            const names = {
+                'data_migration_verification': 'Verificación de Migración de Datos',
+                'data_destruction_verification': 'Verificación de Destrucción de Datos',
+                'system_deactivation_verification': 'Verificación de Desactivación del Sistema',
+                'documentation_completeness': 'Completitud de Documentación'
+            };
+            return names[type] || type;
+        }
+
+        function getVerificationDescription(type, result) {
+            // Personalizar según el tipo de verificación
+            if (type === 'data_migration_verification') {
+                return `${result.successful_migrations || 0} de ${result.total_sources || 0} fuentes migradas exitosamente`;
+            } else if (type === 'data_destruction_verification') {
+                return `${result.verified_destructions || 0} de ${result.total_targets || 0} objetivos destruidos verificados`;
+            }
+            return 'Verificación completada';
+        }
+
+        function loadActiveProcesses() {
+            // Cargar procesos activos para el monitoreo
+            fetch('/api/retirement/processes')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        displayActiveProcesses(result.data.processes);
+                    }
+                })
+                .catch(error => console.error('Error loading processes:', error));
+        }
+
+        function displayActiveProcesses(processes) {
+            const container = document.getElementById('activeProcesses');
+            container.innerHTML = '';
+            
+            if (processes.length === 0) {
+                container.innerHTML = '<p class="text-muted">No hay procesos activos</p>';
+                return;
+            }
+            
+            processes.forEach(process => {
+                const processHtml = `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">${process.system_name}</h6>
+                                    <small class="text-muted">ID: ${process.id} | Creado: ${process.created_at}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="status-badge status-${process.status.toLowerCase()}">${process.status}</span>
+                                    <br>
+                                    <small class="text-muted">${process.approvals_count} aprobaciones</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += processHtml;
+            });
+        }
+
+        function generateReport(type) {
+            if (!currentRetirementId) {
+                showError('Error', 'Debe seleccionar un proceso de retiro');
+                return;
+            }
+            
+            const format = type === 'compliance' ? 'pdf' : 'csv';
+            window.open(`/api/retirement/${currentRetirementId}/report?format=${format}`, '_blank');
+        }
+
+        function showHelp() {
+            alert('Sistema de Retiro de Sistema Computarizado\n\nEste sistema permite gestionar el proceso completo de retiro de un sistema computarizado conforme a GAMP 5 y normativas GxP.\n\nPasos:\n1. Planificación del retiro\n2. Migración de datos críticos (opcional)\n3. Destrucción segura de datos\n4. Verificación post-retiro\n5. Aprobación final\n\nPara más información, consulte la documentación GAMP 5.');
+        }
+
+        function exportCompliance() {
+            if (currentRetirementId) {
+                generateReport('compliance');
+            } else {
+                showError('Error', 'Debe iniciar un proceso de retiro primero');
+            }
+        }
+
+        // Funciones de UI
+        function showLoading(message, detail = '') {
+            document.getElementById('loadingMessage').textContent = message;
+            document.getElementById('loadingDetail').textContent = detail;
+            new bootstrap.Modal(document.getElementById('loadingModal')).show();
+        }
+
+        function hideLoading() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('loadingModal'));
+            if (modal) modal.hide();
+        }
+
+        function showSuccess(title, message) {
+            alert(`✅ ${title}\n\n${message}`);
+        }
+
+        function showError(title, message) {
+            alert(`❌ ${title}\n\n${message}`);
+        }
+
+        function showWarning(title, message) {
+            alert(`⚠️ ${title}\n\n${message}`);
+        }
+    </script>
+</body>
+</html>

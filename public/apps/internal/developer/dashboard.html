@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Dashboard - Sistema ISO 17025</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.min.css" rel="stylesheet">
+    <style>
+        .developer-sidebar {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .developer-content {
+            margin-left: 280px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .developer-nav-link {
+            color: #a0a0a0;
+            padding: 12px 20px;
+            display: block;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 4px 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .developer-nav-link:hover,
+        .developer-nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+            transform: translateX(4px);
+        }
+        
+        .developer-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: none;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card.success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+        
+        .stat-card.warning {
+            background: linear-gradient(135deg, #ff8a00 0%, #ffb347 100%);
+        }
+        
+        .stat-card.danger {
+            background: linear-gradient(135deg, #e53e3e 0%, #fc8181 100%);
+        }
+        
+        .developer-header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 15px 0;
+            margin: -20px -20px 20px -20px;
+            border-radius: 0;
+        }
+        
+        .activity-item {
+            padding: 12px;
+            border-left: 3px solid #667eea;
+            background: #f8f9fa;
+            margin-bottom: 8px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .alert-item {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .alert-critical {
+            background-color: #fee;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .alert-high {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .alert-medium {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .navbar-developer {
+            background: linear-gradient(90deg, #1a1a2e 0%, #16213e 100%);
+            padding: 10px 0;
+        }
+        
+        .developer-badge {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .metric-chart {
+            height: 300px;
+        }
+        
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .status-online {
+            background-color: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+        }
+        
+        .status-warning {
+            background-color: #ffc107;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+        }
+        
+        .status-offline {
+            background-color: #dc3545;
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+        }
+        
+        .action-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .table-developer {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .table-developer th {
+            background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+            border: none;
+            padding: 15px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .table-developer td {
+            padding: 12px 15px;
+            border-top: 1px solid #f1f3f4;
+            vertical-align: middle;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .modal-developer .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .modal-developer .modal-header {
+            background: linear-gradient(90deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .toast-developer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="developer-sidebar">
+        <div class="p-3">
+            <h4 class="text-white mb-0">
+                <i class="fas fa-code me-2"></i>
+                Developer Panel
+            </h4>
+            <small class="text-muted">Privilegios de Superadministrador</small>
+            <span class="developer-badge d-block mt-2">FULL ACCESS</span>
+        </div>
+        
+        <nav class="mt-4">
+            <a href="#dashboard" class="developer-nav-link active" data-section="dashboard">
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Dashboard
+            </a>
+            <a href="#users" class="developer-nav-link" data-section="users">
+                <i class="fas fa-users me-2"></i>
+                Gestión de Usuarios
+            </a>
+            <a href="#system-config" class="developer-nav-link" data-section="system-config">
+                <i class="fas fa-cogs me-2"></i>
+                Configuración del Sistema
+            </a>
+            <a href="#incidents" class="developer-nav-link" data-section="incidents">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Gestión de Incidentes
+            </a>
+            <a href="#monitoring" class="developer-nav-link" data-section="monitoring">
+                <i class="fas fa-chart-line me-2"></i>
+                Monitoreo en Tiempo Real
+            </a>
+            <a href="#documents" class="developer-nav-link" data-section="documents">
+                <i class="fas fa-file-alt me-2"></i>
+                Documentación Crítica
+            </a>
+            <a href="#alerts" class="developer-nav-link" data-section="alerts">
+                <i class="fas fa-bell me-2"></i>
+                Alertas Automáticas
+            </a>
+            <a href="#audit" class="developer-nav-link" data-section="audit">
+                <i class="fas fa-history me-2"></i>
+                Logs de Auditoría
+            </a>
+            <a href="#backup" class="developer-nav-link" data-section="backup">
+                <i class="fas fa-database me-2"></i>
+                Backup y Restauración
+            </a>
+        </nav>
+        
+        <div class="mt-auto p-3">
+            <div class="system-status">
+                <div class="status-indicator status-online" id="systemStatus"></div>
+                <small class="text-muted">Sistema Operacional</small>
+            </div>
+            <small class="text-muted d-block mt-2">
+                Última actualización: <span id="lastUpdate">--:--</span>
+            </small>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="developer-content">
+        <!-- Header -->
+        <div class="developer-header">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="mb-0">
+                            <i class="fas fa-user-cog me-2"></i>
+                            Panel de Control Developer
+                        </h2>
+                        <p class="mb-0 opacity-75">Acceso total al sistema computarizado ISO 17025</p>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-outline-light btn-sm" id="refreshData">
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Actualizar
+                        </button>
+                        <button class="btn btn-outline-light btn-sm ms-2" id="emergencyMode">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Modo Emergencia
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Sections -->
+        <div id="content-container">
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="content-section">
+                <!-- System Statistics -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="mb-0" id="totalUsers">--</h3>
+                                    <p class="mb-0">Usuarios Totales</p>
+                                </div>
+                                <i class="fas fa-users fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card success">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="mb-0" id="totalInstruments">--</h3>
+                                    <p class="mb-0">Instrumentos</p>
+                                </div>
+                                <i class="fas fa-tools fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card warning">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="mb-0" id="pendingCalibrations">--</h3>
+                                    <p class="mb-0">Calibraciones Pendientes</p>
+                                </div>
+                                <i class="fas fa-clock fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card danger">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="mb-0" id="openIncidents">--</h3>
+                                    <p class="mb-0">Incidentes Abiertos</p>
+                                </div>
+                                <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Health and Activity -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="developer-card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-heartbeat me-2"></i>
+                                    Estado del Sistema
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <canvas id="systemMetricsChart" class="metric-chart"></canvas>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="system-metrics" id="systemMetrics">
+                                            <!-- System metrics will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="developer-card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-bell me-2"></i>
+                                    Alertas Críticas
+                                </h5>
+                            </div>
+                            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                <div id="criticalAlerts">
+                                    <!-- Critical alerts will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="developer-card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-history me-2"></i>
+                                    Actividad Reciente del Sistema
+                                </h5>
+                            </div>
+                            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                <div id="recentActivity">
+                                    <!-- Recent activity will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="users-section" class="content-section" style="display: none;">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="developer-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-users me-2"></i>
+                                    Gestión Avanzada de Usuarios
+                                </h5>
+                                <button class="btn action-button" id="addUserBtn">
+                                    <i class="fas fa-plus me-1"></i>
+                                    Nuevo Usuario
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-developer" id="usersTable">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Usuario</th>
+                                                <th>Nombre Completo</th>
+                                                <th>Email</th>
+                                                <th>Rol</th>
+                                                <th>Empresa</th>
+                                                <th>Última Actividad</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="usersTableBody">
+                                            <!-- Users data will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Configuration Section -->
+            <div id="system-config-section" class="content-section" style="display: none;">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="developer-card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-cogs me-2"></i>
+                                    Configuración Avanzada del Sistema
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="systemConfigForm">
+                                    <div id="configFields">
+                                        <!-- Configuration fields will be loaded here -->
+                                    </div>
+                                    <div class="mt-4">
+                                        <button type="submit" class="btn action-button">
+                                            <i class="fas fa-save me-1"></i>
+                                            Guardar Configuración
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary ms-2" id="resetConfigBtn">
+                                            <i class="fas fa-undo me-1"></i>
+                                            Restaurar Valores
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other sections (incidents, monitoring, etc.) will be added similarly -->
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer">
+        <!-- Toasts will be added here dynamically -->
+    </div>
+
+    <!-- Modals -->
+    <!-- User Modal -->
+    <div class="modal fade modal-developer" id="userModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-plus me-2"></i>
+                        <span id="userModalTitle">Nuevo Usuario</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <input type="hidden" id="userId" name="id">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="usuario" class="form-label">Usuario</label>
+                                    <input type="text" class="form-control" id="usuario" name="usuario" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="correo" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="correo" name="correo" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nombre" class="form-label">Nombre</label>
+                                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="apellidos" class="form-label">Apellidos</label>
+                                    <input type="text" class="form-control" id="apellidos" name="apellidos" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="telefono" class="form-label">Teléfono</label>
+                                    <input type="text" class="form-control" id="telefono" name="telefono">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Contraseña</label>
+                                    <input type="password" class="form-control" id="password" name="password">
+                                    <small class="form-text text-muted">Dejar en blanco para mantener la actual</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="role_id" class="form-label">Rol</label>
+                                    <select class="form-select" id="role_id" name="role_id" required>
+                                        <!-- Roles will be loaded here -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="empresa_id" class="form-label">Empresa</label>
+                                    <select class="form-select" id="empresa_id" name="empresa_id" required>
+                                        <!-- Companies will be loaded here -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn action-button" id="saveUserBtn">
+                        <i class="fas fa-save me-1"></i>
+                        Guardar Usuario
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    
+    <script>
+        // Developer Dashboard JavaScript
+        class DeveloperDashboard {
+            constructor() {
+                this.currentSection = 'dashboard';
+                this.charts = {};
+                this.refreshInterval = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadDashboardData();
+                this.startAutoRefresh();
+            }
+
+            setupEventListeners() {
+                // Navigation
+                document.querySelectorAll('.developer-nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const section = e.target.dataset.section;
+                        this.showSection(section);
+                    });
+                });
+
+                // Refresh button
+                document.getElementById('refreshData').addEventListener('click', () => {
+                    this.refreshCurrentSection();
+                });
+
+                // Emergency mode
+                document.getElementById('emergencyMode').addEventListener('click', () => {
+                    this.toggleEmergencyMode();
+                });
+
+                // User management
+                document.getElementById('addUserBtn')?.addEventListener('click', () => {
+                    this.showUserModal();
+                });
+
+                document.getElementById('saveUserBtn')?.addEventListener('click', () => {
+                    this.saveUser();
+                });
+
+                // System config form
+                document.getElementById('systemConfigForm')?.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveSystemConfig();
+                });
+            }
+
+            showSection(sectionName) {
+                // Update navigation
+                document.querySelectorAll('.developer-nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+
+                // Hide all sections
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+
+                // Show selected section
+                document.getElementById(`${sectionName}-section`).style.display = 'block';
+                
+                this.currentSection = sectionName;
+                this.loadSectionData(sectionName);
+            }
+
+            async loadDashboardData() {
+                try {
+                    const response = await fetch('/app/Modules/Internal/Developer/SuperadminDashboard.php?action=dashboard');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.updateDashboardStats(data.data.stats);
+                        this.updateSystemMetrics(data.data.system_status);
+                        this.updateRecentActivity(data.data.recent_activity);
+                        this.updateSystemStatus('online');
+                    }
+                } catch (error) {
+                    console.error('Error loading dashboard data:', error);
+                    this.showToast('Error al cargar datos del dashboard', 'danger');
+                    this.updateSystemStatus('offline');
+                }
+            }
+
+            updateDashboardStats(stats) {
+                document.getElementById('totalUsers').textContent = stats.total_usuarios || '--';
+                document.getElementById('totalInstruments').textContent = stats.total_instrumentos || '--';
+                document.getElementById('pendingCalibrations').textContent = stats.calibraciones_pendientes || '--';
+                document.getElementById('openIncidents').textContent = stats.incidentes_abiertos || '--';
+            }
+
+            updateSystemMetrics(systemStatus) {
+                const metricsContainer = document.getElementById('systemMetrics');
+                if (!metricsContainer) return;
+
+                const metrics = [
+                    { label: 'Base de Datos', value: systemStatus.database_connection ? 'Conectada' : 'Desconectada', status: systemStatus.database_connection ? 'success' : 'danger' },
+                    { label: 'Uso de Disco', value: `${systemStatus.disk_space?.percentage || 0}%`, status: (systemStatus.disk_space?.percentage || 0) > 80 ? 'warning' : 'success' },
+                    { label: 'Memoria PHP', value: this.formatBytes(systemStatus.memory_usage?.current || 0), status: 'info' },
+                    { label: 'Versión PHP', value: systemStatus.php_version || 'N/A', status: 'info' },
+                    { label: 'MySQL', value: systemStatus.mysql_version || 'N/A', status: 'info' }
+                ];
+
+                metricsContainer.innerHTML = metrics.map(metric => `
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fw-bold">${metric.label}:</span>
+                        <span class="badge bg-${metric.status}">${metric.value}</span>
+                    </div>
+                `).join('');
+            }
+
+            updateRecentActivity(activities) {
+                const container = document.getElementById('recentActivity');
+                if (!container || !activities) return;
+
+                container.innerHTML = activities.slice(0, 10).map(activity => `
+                    <div class="activity-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>${activity.accion}</strong>
+                                <p class="mb-1 text-muted">${activity.descripcion}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i>
+                                    ${activity.usuario_nombre || 'Sistema'}
+                                </small>
+                            </div>
+                            <small class="text-muted">${this.formatDate(activity.fecha_creacion)}</small>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async loadSectionData(section) {
+                switch (section) {
+                    case 'users':
+                        await this.loadUsersData();
+                        break;
+                    case 'system-config':
+                        await this.loadSystemConfig();
+                        break;
+                    case 'incidents':
+                        await this.loadIncidents();
+                        break;
+                    case 'monitoring':
+                        await this.loadMonitoring();
+                        break;
+                    case 'alerts':
+                        await this.loadAlerts();
+                        break;
+                    case 'audit':
+                        await this.loadAuditLogs();
+                        break;
+                    case 'backup':
+                        await this.loadBackupInfo();
+                        break;
+                }
+            }
+
+            async loadUsersData() {
+                try {
+                    const response = await fetch('/app/Modules/Internal/Developer/SuperadminDashboard.php?action=users');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.updateUsersTable(data.data);
+                    }
+                } catch (error) {
+                    console.error('Error loading users data:', error);
+                    this.showToast('Error al cargar usuarios', 'danger');
+                }
+            }
+
+            updateUsersTable(users) {
+                const tbody = document.getElementById('usersTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.usuario}</td>
+                        <td>${user.nombre} ${user.apellidos}</td>
+                        <td>${user.correo}</td>
+                        <td>
+                            <span class="badge bg-primary">${user.role_name}</span>
+                        </td>
+                        <td>${user.empresa_nombre}</td>
+                        <td>${this.formatDate(user.ultima_actividad)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="dashboard.editUser(${user.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="dashboard.deleteUser(${user.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            showUserModal(userId = null) {
+                const modal = new bootstrap.Modal(document.getElementById('userModal'));
+                
+                if (userId) {
+                    // Edit mode
+                    document.getElementById('userModalTitle').textContent = 'Editar Usuario';
+                    // Load user data
+                    this.loadUserData(userId);
+                } else {
+                    // Create mode
+                    document.getElementById('userModalTitle').textContent = 'Nuevo Usuario';
+                    document.getElementById('userForm').reset();
+                    document.getElementById('userId').value = '';
+                }
+                
+                modal.show();
+            }
+
+            async saveUser() {
+                const form = document.getElementById('userForm');
+                const formData = new FormData(form);
+                const userData = Object.fromEntries(formData.entries());
+
+                try {
+                    const method = userData.id ? 'PUT' : 'POST';
+                    const response = await fetch('/app/Modules/Internal/Developer/SuperadminDashboard.php?action=users', {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(userData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        this.showToast(result.message, 'success');
+                        bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
+                        this.loadUsersData();
+                    } else {
+                        this.showToast(result.message, 'danger');
+                    }
+                } catch (error) {
+                    console.error('Error saving user:', error);
+                    this.showToast('Error al guardar usuario', 'danger');
+                }
+            }
+
+            async deleteUser(userId) {
+                if (!confirm('¿Está seguro de que desea eliminar este usuario?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/app/Modules/Internal/Developer/SuperadminDashboard.php?action=users&id=${userId}`, {
+                        method: 'DELETE'
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        this.showToast(result.message, 'success');
+                        this.loadUsersData();
+                    } else {
+                        this.showToast(result.message, 'danger');
+                    }
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                    this.showToast('Error al eliminar usuario', 'danger');
+                }
+            }
+
+            updateSystemStatus(status) {
+                const indicator = document.getElementById('systemStatus');
+                const statusMap = {
+                    'online': 'status-online',
+                    'warning': 'status-warning',
+                    'offline': 'status-offline'
+                };
+
+                indicator.className = `status-indicator ${statusMap[status] || 'status-offline'}`;
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+            }
+
+            showToast(message, type = 'info') {
+                const toastContainer = document.getElementById('toastContainer');
+                const toastId = 'toast-' + Date.now();
+                
+                const toastHtml = `
+                    <div class="toast align-items-center text-bg-${type} border-0" id="${toastId}" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                const toastElement = document.getElementById(toastId);
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+
+                // Remove toast element after it's hidden
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+            }
+
+            formatBytes(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            formatDate(dateString) {
+                if (!dateString) return 'N/A';
+                return new Date(dateString).toLocaleString();
+            }
+
+            startAutoRefresh() {
+                this.refreshInterval = setInterval(() => {
+                    if (this.currentSection === 'dashboard') {
+                        this.loadDashboardData();
+                    }
+                }, 30000); // Refresh every 30 seconds
+            }
+
+            refreshCurrentSection() {
+                this.loadSectionData(this.currentSection);
+                this.showToast('Datos actualizados', 'success');
+            }
+
+            toggleEmergencyMode() {
+                // Implement emergency mode logic
+                this.showToast('Modo de emergencia activado', 'warning');
+            }
+
+            // Placeholder methods for other sections
+            async loadSystemConfig() {
+                // Implement system configuration loading
+            }
+
+            async loadIncidents() {
+                // Implement incidents loading
+            }
+
+            async loadMonitoring() {
+                // Implement monitoring data loading
+            }
+
+            async loadAlerts() {
+                // Implement alerts loading
+            }
+
+            async loadAuditLogs() {
+                // Implement audit logs loading
+            }
+
+            async loadBackupInfo() {
+                // Implement backup information loading
+            }
+        }
+
+        // Initialize dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.dashboard = new DeveloperDashboard();
+        });
+    </script>
+</body>
+</html>

@@ -1,16 +1,22 @@
 {
-  "name": "sistema-computarizado-iso-17025",
+  "name": "iso17025-change-management-system",
   "version": "1.0.0",
-  "description": "Sistema computarizado de gestión de calibraciones bajo la norma ISO 17025 con frontend HTML5/Bootstrap y backend PHP.",
-  "main": "public/index.php",
+  "description": "Sistema completo de gestión de cambios, auditoría de usuarios, backup y administración de incidentes para ISO 17025",
+  "main": "app/Modules/AlertSystem/alert_server.js",
   "scripts": {
-    "start": "npm run serve",
+    "start": "node app/Modules/AlertSystem/alert_server.js",
     "serve": "php -S localhost:8000 -t public",
     "dev": "concurrently \"npm run serve\" \"lite-server\"",
     "test": "node --test --test-concurrency=1 tests/js/*.test.js tests/validation/*.test.js",
     "test:server": "node tools/scripts/test-server.js",
     "alerts:scheduler": "php app/Modules/Calibraciones/alert_scheduler.php --daemon",
-    "calibrator:ingest": "node tools/scripts/calibrator_ingest.js"
+    "calibrator:ingest": "node tools/scripts/calibrator_ingest.js",
+    "install-system": "php install_change_management_system.php",
+    "start-services": "start_sistema_completo.bat",
+    "stop-services": "stop_sistema.bat",
+    "backup": "php app/Modules/BackupSystem/backup_scheduler.php --job=manual_backup",
+    "cleanup": "php maintenance/cleanup_old_logs.php",
+    "health-check": "curl -s http://localhost:3001/api/system/health"
   },
   "keywords": [
     "calibraciones",

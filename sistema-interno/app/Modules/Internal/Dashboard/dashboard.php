@@ -3,7 +3,7 @@ require_once dirname(__DIR__, 3) . '/Core/auth.php';
 
 $rol        = $_SESSION['rol'] ?? '';
 $roleAlias  = session_role_alias() ?? '';
-$allowedRol = ['superadministrador', 'administrador', 'supervisor', 'operador', 'lector', 'cliente'];
+$allowedRol = ['superadministrador', 'administrador', 'supervisor', 'operador', 'lector', 'cliente', 'developer'];
 $portalScopes = $roleAlias === 'cliente' ? ['tenant'] : ['internal'];
 
 ensure_portal_access($portalScopes);
@@ -61,6 +61,19 @@ switch ($rol) {
         $links[] = ['Gestión de clientes', '#', 'none'];
         $links[] = ['Crear cuenta de Personal', '#', 'none'];
         $links[] = ['Crear cuenta de Cliente', '#', 'none'];
+        break;
+    case 'Developer':
+        $links[] = ['🚀 Developer Dashboard', $basePath . '/apps/internal/developer/dashboard.html', 'full'];
+        $links[] = ['Gestión de usuarios', $basePath . '/apps/internal/usuarios/list_users.html', 'full'];
+        $links[] = ['Calibraciones', $basePath . '/apps/internal/calibraciones/list_calibrations.html', 'full'];
+        $links[] = ['Reportes', $basePath . '/apps/internal/reportes/reports.html', 'full'];
+        $links[] = ['Gestión de clientes', $basePath . '/index.php?app=service', 'full'];
+        $links[] = ['Crear cuenta de Personal', $addUserPage . '?tipo=personal', 'full'];
+        $links[] = ['Crear cuenta de Cliente', $addUserPage . '?tipo=cliente', 'full'];
+        $links[] = ['⚙️ Configuración del Sistema', $basePath . '/apps/internal/developer/dashboard.html#system-config', 'full'];
+        $links[] = ['📊 Monitoreo en Tiempo Real', $basePath . '/apps/internal/developer/dashboard.html#monitoring', 'full'];
+        $links[] = ['🔔 Alertas Automáticas', $basePath . '/apps/internal/developer/dashboard.html#alerts', 'full'];
+        $links[] = ['📋 Logs de Auditoría', $basePath . '/apps/internal/developer/dashboard.html#audit', 'full'];
         break;
 }
 
