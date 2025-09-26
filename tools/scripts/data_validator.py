@@ -32,7 +32,7 @@ import re
 from sbl_utils import (
     setup_logging, get_repo_root, get_csv_originales_dir, 
     get_normalize_dir, CSVHandler, DateParser, TextNormalizer,
-    DataValidator, ValidationError
+    ValidationError
 )
 
 @dataclass

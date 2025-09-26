@@ -32,7 +32,12 @@ try:
     HAS_PANDAS = True
 except ImportError:
     HAS_PANDAS = False
-    pd = None
+    pd = None  # type: ignore
+
+# Import adicional para type checking
+from typing import TYPE_CHECKING
+if TYPE_CHECKING and pd is not None:
+    from pandas import DataFrame, ExcelWriter
 
 from sbl_utils import (
     setup_logging, get_repo_root, get_csv_originales_dir, 
@@ -321,9 +326,12 @@ class AuditReportGenerator:
     
     def generate_excel_report(self, output_file: Path) -> None:
         """Genera reporte en formato Excel (si pandas está disponible)."""
-        if not HAS_PANDAS:
+        if not HAS_PANDAS or pd is None:
             self.logger.warning("pandas no disponible, omitiendo reporte Excel")
             return
+        
+        # Assert para ayudar al type checker
+        assert pd is not None, "pandas debe estar disponible en este punto"
         
         self.logger.info(f"Generando reporte Excel en {output_file}")
         
@@ -342,6 +350,7 @@ class AuditReportGenerator:
                 'Frecuencia (meses)': status.frecuencia_meses
             })
         
+        # En este punto, el type checker sabe que pd no es None
         df = pd.DataFrame(data)
         
         # Crear archivo Excel con múltiples hojas
