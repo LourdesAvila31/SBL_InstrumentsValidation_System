@@ -1,975 +1,1958 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <script>
-        (function() {
-            var marker = '/public/';
-            var path = window.location.pathname || '';
-            var index = path.indexOf(marker);
-            var base = index !== -1 ? path.slice(0, index + marker.length) : '/';
-            if (!base.endsWith('/')) {
-                base += '/';
-            }
-            window.BASE_URL = base === '/' ? '' : base.replace(/\/$/, '');
-            document.write('<base href="' + base + '">');
-        })();
-    </script>
-    <!-- Rutas relativizadas para cumplir ISO 17025/NOM-059 -->
-    
-    <title>Developer Private Section | SBL Pharma</title>
+<!DOCTYPE html><!DOCTYPE html>
+
+<html lang="es"><html lang="es">
+
+<head><head>
+
+    <meta charset="UTF-8">    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <script>
+
+    <title>Developer Portal - SBL Sistema Interno</title>        (function() {
+
+                var marker = '/public/';
+
+    <!-- Bootstrap 5 -->            var path = window.location.pathname || '';
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">            var index = path.indexOf(marker);
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">            var base = index !== -1 ? path.slice(0, index + marker.length) : '/';
+
+                if (!base.endsWith('/')) {
+
+    <!-- Custom Dark Theme -->                base += '/';
+
+    <link rel="stylesheet" href="assets/css/developer-theme.css">            }
+
+                window.BASE_URL = base === '/' ? '' : base.replace(/\/$/, '');
+
+    <!-- Code Editor -->            document.write('<base href="' + base + '">');
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">        })();
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css">    </script>
+
+        <!-- Rutas relativizadas para cumplir ISO 17025/NOM-059 -->
+
+    <!-- Chart.js -->    
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>    <title>Developer Private Section | SBL Pharma</title>
+
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <!-- Bootstrap, Montserrat, FontAwesome -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/styles/master-theme.css">
-    <link rel="stylesheet" href="assets/styles/internal.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    
-    <style>
-        body {
+
+    <style>    <!-- Bootstrap, Bootstrap Icons, Montserrat, FontAwesome -->
+
+        :root {    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+            --dark-bg-primary: #0d1117;    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+            --dark-bg-secondary: #161b22;    <link rel="stylesheet" href="assets/styles/master-theme.css">
+
+            --dark-bg-tertiary: #21262d;    <link rel="stylesheet" href="assets/styles/internal.css">
+
+            --dark-border: #30363d;    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+            --dark-text-primary: #e6edf3;    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+
+            --dark-text-secondary: #8b949e;    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+            --accent-blue: #1f6feb;    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+            --accent-green: #2ea043;    
+
+            --accent-yellow: #e3b341;    <style>
+
+            --accent-red: #f85149;        :root {
+
+        }            --dev-primary: #0d575a;
+
+            --dev-secondary: #6c757d;
+
+        body {            --dev-success: #28a745;
+
+            background: var(--dark-bg-primary);            --dev-danger: #dc3545;
+
+            color: var(--dark-text-primary);            --dev-warning: #ffc107;
+
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;            --dev-info: #0dcaf0;
+
+            overflow-x: hidden;            --dev-light: #f8f9fa;
+
+        }            --dev-dark: #212529;
+
+            --dev-accent: #0c8c98;
+
+        .navbar-dark-custom {            --dev-skyblue: #217b9b;
+
+            background: var(--dark-bg-secondary) !important;        }
+
+            border-bottom: 1px solid var(--dark-border);
+
+        }        body {
+
             background: #f4f6f8;
-            font-family: 'Montserrat', Arial, sans-serif;
-            margin: 0;
-            overflow-x: hidden;
-        }
-        .sidebar {
+
+        .sidebar-dark {            font-family: 'Montserrat', Arial, sans-serif;
+
+            background: var(--dark-bg-secondary);            margin: 0;
+
+            border-right: 1px solid var(--dark-border);            overflow-x: hidden;
+
+            min-height: calc(100vh - 56px);        }
+
+        }        .sidebar {
+
             position: fixed;
-            left: 0; top: 0;
-            width: 200px;
-            height: 100vh;
-            background: #0d575a;
-            color: #fff;
-            z-index: 100;
+
+        .nav-link {            left: 0; 
+
+            color: var(--dark-text-secondary) !important;            top: 0;
+
+            padding: 0.75rem 1rem;            width: 250px;
+
+            margin: 2px 8px;            height: 100vh;
+
+            border-radius: 6px;            background: var(--dev-primary);
+
+            transition: all 0.2s ease;            color: #fff;
+
+        }            z-index: 1000;
+
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 30px;
-            box-shadow: 1px 0 6px #0002;
+
+        .nav-link:hover,            flex-direction: column;
+
+        .nav-link.active {            padding: 0;
+
+            background: var(--dark-bg-tertiary);            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+
+            color: var(--dark-text-primary) !important;            transition: transform 0.3s ease;
+
+        }        }
+
+        
+
+        .nav-link.active {        .sidebar-header {
+
+            background: var(--accent-blue);            padding: 20px;
+
+            color: white !important;            text-align: center;
+
+        }            border-bottom: 1px solid rgba(255,255,255,0.1);
+
         }
-        .sidebar-logo img {
-            width: 140px;
-            margin-bottom: 22px;
+
+        .card-dark {        
+
+            background: var(--dark-bg-secondary);        .sidebar-logo {
+
+            border: 1px solid var(--dark-border);            color: #fff;
+
+            color: var(--dark-text-primary);            font-size: 1.2rem;
+
+        }            font-weight: 700;
+
+            text-decoration: none;
+
+        .card-dark .card-header {            display: flex;
+
+            background: var(--dark-bg-tertiary);            align-items: center;
+
+            border-bottom: 1px solid var(--dark-border);            justify-content: center;
+
+        }            gap: 8px;
+
         }
-        .sidebar-nav {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
+
+        .stats-card {        
+
+            background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%);        .sidebar-nav {
+
+            border: 1px solid var(--dark-border);            flex: 1;
+
+            border-radius: 12px;            padding: 20px 0;
+
+            transition: all 0.3s ease;        }
+
+        }        
+
         .sidebar-nav .nav-link {
-            width: 92%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 0 8px 0;
-            color: #cfd8dc;
-            text-decoration: none;
-            font-size: 1.08rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            border-radius: 10px;
-            margin-bottom: 2px;
-            transition: background 0.2s, color 0.2s;
-            position: relative;
-        }
-        .sidebar-nav .nav-link.active,
-        .sidebar-nav .nav-link:hover {
-            background: #0c8c98;
-            color: #fff;
-        }
-        .sidebar-nav .nav-link i {
-            font-size: 1.85rem;
-            margin-bottom: 8px;
-        }
-        .sidebar-nav .nav-link.active::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 16px;
-            width: 4px;
-            height: 32px;
-            background: #fff;
-            border-radius: 2px;
-        }
-        .main-content {
-            margin-left: 200px;
-            min-height: 100vh;
-            padding: 0;
-            width: calc(100% - 200px);
-        }
-        .topbar {
-            background: #fff;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 34px 0 28px;
-            box-shadow: 0 1px 8px #0001;
-        }
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 26px;
-        }
-        .topbar-title {
-            font-size: 1.45rem;
-            font-weight: 700;
-            color: #217b9b;
-            letter-spacing: 1px;
-        }
-        .topbar-user {
-            font-size: 1rem;
-            color: #217b9b;
-            font-weight: 400;
-            margin-left: 24px;
-        }
-        .topbar-icons {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-        .topbar-icons i {
-            font-size: 1.2rem;
-            color: #217b9b;
-            cursor: pointer;
-            margin-top: 5px;
-        }
-        .dashboard-section {
-            padding: 32px 28px;
-        }
-        .dashboard-bar {
-            background: #0d575a;
-            color: #fff;
-            font-weight: 700;
-            font-size: 1.1rem;
-            border-radius: 4px;
-            margin-bottom: 22px;
-            padding: 10px 18px;
-            letter-spacing: 0.5px;
-        }
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 18px;
-            margin-bottom: 18px;
-        }
-        .dashboard-grid.grid-5 {
-            grid-template-columns: repeat(5, 1fr);
-        }
-        .dashboard-grid.grid-4 {
-            grid-template-columns: repeat(4, 1fr);
-        }
-        .dashboard-btn {
-            background: #0c8c98;
-            color: #fff;
-            font-weight: 600;
-            border: none;
-            border-radius: 6px;
-            padding: 24px 12px 14px 12px;
-            min-width: 130px;
+
+        .stats-card:hover {            display: flex;
+
+            transform: translateY(-2px);            align-items: center;
+
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);            padding: 12px 20px;
+
+            border-color: var(--accent-blue);            color: rgba(255,255,255,0.7);
+
+        }            text-decoration: none;
+
+            font-size: 0.95rem;
+
+        .progress-dark {            font-weight: 500;
+
+            background: var(--dark-bg-tertiary);            transition: all 0.3s ease;
+
+            height: 8px;            border: none;
+
+            border-radius: 4px;            background: none;
+
+        }            width: 100%;
+
             text-align: left;
-            font-size: 1.05rem;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: flex-start;
-            transition: background 0.18s, color 0.18s;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .dashboard-btn .panel-title {
+
+        .btn-outline-primary {        }
+
+            border-color: var(--accent-blue);        
+
+            color: var(--accent-blue);        .sidebar-nav .nav-link:hover {
+
+        }            color: #fff;
+
+            background: rgba(255,255,255,0.1);
+
+        .btn-outline-primary:hover {            transform: translateX(5px);
+
+            background: var(--accent-blue);        }
+
+            border-color: var(--accent-blue);        
+
+        }        .sidebar-nav .nav-link.active {
+
+            color: #fff;
+
+        .text-primary {            background: var(--dev-accent);
+
+            color: var(--accent-blue) !important;            border-right: 3px solid #fff;
+
+        }        }
+
+        
+
+        .text-success {        .sidebar-nav .nav-link i {
+
+            color: var(--accent-green) !important;            width: 20px;
+
+        }            margin-right: 12px;
+
             font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
-            white-space: pre-line;
-        }
-        .dashboard-btn .panel-value {
-            font-size: 2.4rem;
-            font-weight: 700;
-            margin-bottom: 6px;
-            word-break: break-word;
-        }
-        .dashboard-btn:hover {
-            background: #217b9b;
-            color: #fff;
-        }
-        .dashboard-btn .icon-btn {
-            font-size: 1.7rem;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-        .dashboard-btn.sbl-skyblue {
-            background: #217b9b;
-        }
-        .dashboard-btn.sbl-skyblue:hover {
-            background: #0d575a;
-        }
-        
-        /* Developer specific styles */
-        .dev-metric {
-            background: #28a745;
-        }
-        .dev-metric:hover {
-            background: #1e7e34;
-        }
-        .dev-critical {
-            background: #dc3545;
-        }
-        .dev-critical:hover {
-            background: #c82333;
-        }
-        .dev-warning {
-            background: #ffc107;
-            color: #212529;
-        }
-        .dev-warning:hover {
-            background: #e0a800;
-        }
-        .dev-info {
-            background: #0dcaf0;
-            color: #212529;
-        }
-        .dev-info:hover {
-            background: #3dd5f3;
-        }
-        
-        /* Charts container */
-        .chart-container {
-            background: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        
-        /* Developer badge */
-        .dev-badge {
-            background: #dc3545;
-            color: #fff;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 4px 8px;
-            border-radius: 4px;
-            letter-spacing: 1px;
-        }
-        
-        /* Responsive */
-        @media (max-width: 900px) {
-            .main-content { 
-                margin-left: 0; 
-                width: 100%; 
-            }
-            .dashboard-section { 
-                padding: 18px 6px; 
-            }
-            .dashboard-grid { 
-                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
-                gap: 10px; 
-            }
+
+        .text-warning {        }
+
+            color: var(--accent-yellow) !important;        .main-content {
+
+        }            margin-left: 250px;
+
+            min-height: 100vh;
+
+        .text-danger {            padding: 0;
+
+            color: var(--accent-red) !important;            width: calc(100% - 250px);
+
+        }            transition: margin-left 0.3s ease, width 0.3s ease;
+
         }
 
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            color: white;
-            background-color: rgba(255,255,255,0.1);
-            transform: translateX(5px);
+        .border-secondary {        .navbar {
+
+            border-color: var(--dark-border) !important;            background: var(--dev-dark) !important;
+
+        }            border-bottom: 1px solid rgba(255,255,255,0.1);
+
+            z-index: 999;
+
+        .list-group-item {        }
+
+            background: transparent;        
+
+            border-color: var(--dark-border);        .navbar-brand {
+
+        }            font-weight: 700;
+
+            color: #fff !important;
+
+        .dropdown-menu-dark {        }
+
+            background: var(--dark-bg-secondary);        
+
+            border: 1px solid var(--dark-border);        .navbar-nav .nav-link {
+
+        }            color: rgba(255,255,255,0.8) !important;
+
         }
 
-        .sidebar .nav-link i {
-            width: 20px;
-            margin-right: 10px;
+        .dropdown-item {        
+
+            color: var(--dark-text-secondary);        .navbar-nav .nav-link:hover {
+
+        }            color: #fff !important;
+
         }
 
-        .main-content {
-            padding: 20px;
+        .dropdown-item:hover {        .content-wrapper {
+
+            background: var(--dark-bg-tertiary);            padding: 30px;
+
+            color: var(--dark-text-primary);            background: #f8f9fa;
+
+        }            min-height: calc(100vh - 56px);
+
         }
 
-        .kpi-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border-left: 4px solid var(--dev-primary);
+        .badge {        
+
+            background: var(--accent-red) !important;        .section {
+
+        }            display: none;
+
         }
 
-        .kpi-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
+        .terminal-output {        
 
-        .kpi-card.critical {
-            border-left-color: var(--dev-danger);
-        }
+            background: var(--dark-bg-primary);        .section.active {
 
-        .kpi-card.warning {
-            border-left-color: var(--dev-warning);
-        }
+            color: #00ff88;            display: block;
 
-        .kpi-card.success {
-            border-left-color: var(--dev-success);
-        }
+            font-family: 'Courier New', monospace;        }
 
-        .kpi-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            line-height: 1;
-        }
+            border: 1px solid var(--dark-border);        .dashboard-grid {
 
-        .kpi-label {
-            font-size: 0.9rem;
-            color: var(--dev-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+            border-radius: 6px;            display: grid;
 
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
+            padding: 1rem;            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 
-        .status-good {
-            background-color: #d1e7dd;
-            color: #0f5132;
-        }
+            overflow-x: auto;            gap: 18px;
 
-        .status-warning {
-            background-color: #fff3cd;
-            color: #664d03;
-        }
+            max-height: 300px;            margin-bottom: 18px;
 
-        .status-critical {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
+        }        }
 
-        .chart-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
+        .dashboard-grid.grid-5 {
 
-        .loading-spinner {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 200px;
-        }
+        .code-block {            grid-template-columns: repeat(5, 1fr);
 
-        .alert-item {
-            border-left: 4px solid;
-            margin-bottom: 10px;
-        }
+            background: var(--dark-bg-primary);        }
 
-        .alert-critical {
-            border-left-color: var(--dev-danger);
-        }
+            border: 1px solid var(--dark-border);        .dashboard-grid.grid-4 {
 
-        .alert-warning {
-            border-left-color: var(--dev-warning);
-        }
+            border-radius: 6px;            grid-template-columns: repeat(4, 1fr);
 
-        .alert-info {
-            border-left-color: var(--dev-info);
-        }
+            padding: 1rem;        }
 
-        .metric-trend {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.85rem;
-        }
+            font-family: 'Courier New', monospace;        .dashboard-btn {
 
-        .trend-up {
-            color: var(--dev-success);
-        }
+            font-size: 0.875rem;            background: #0c8c98;
 
-        .trend-down {
-            color: var(--dev-danger);
-        }
+            overflow-x: auto;            color: #fff;
 
-        .trend-stable {
-            color: var(--dev-secondary);
-        }
+        }            font-weight: 600;
 
-        .real-time-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--dev-success);
-            font-size: 0.8rem;
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .section-header {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .tab-content {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            padding: 20px;
-        }
-
-        .nav-tabs .nav-link {
             border: none;
-            border-radius: 8px 8px 0 0;
-            color: var(--dev-secondary);
-            font-weight: 500;
+
+        .metric-number {            border-radius: 6px;
+
+            font-size: 2rem;            padding: 24px 12px 14px 12px;
+
+            font-weight: 700;            min-width: 130px;
+
+            line-height: 1.2;            text-align: left;
+
+        }            font-size: 1.05rem;
+
+            display: flex;
+
+        .metric-label {            flex-direction: column;
+
+            font-size: 0.875rem;            align-items: flex-start;
+
+            text-transform: uppercase;            justify-content: flex-start;
+
+            font-weight: 600;            transition: background 0.18s, color 0.18s;
+
+            letter-spacing: 0.5px;            text-decoration: none;
+
+            opacity: 0.8;            cursor: pointer;
+
+        }        }
+
+        .dashboard-btn .panel-title {
+
+        .floating-icon {            font-size: 1.1rem;
+
+            animation: float 3s ease-in-out infinite;            font-weight: 600;
+
+        }            margin-bottom: 6px;
+
+            letter-spacing: 0.5px;
+
+        @keyframes float {            white-space: pre-line;
+
+            0%, 100% { transform: translateY(0px); }        }
+
+            50% { transform: translateY(-10px); }        .dashboard-btn .panel-value {
+
+        }            font-size: 2.4rem;
+
+            font-weight: 700;
+
+        .pulse-glow {            margin-bottom: 6px;
+
+            animation: pulse 2s infinite;            word-break: break-word;
+
+        }        }
+
+        .dashboard-btn:hover {
+
+        @keyframes pulse {            background: #217b9b;
+
+            0%, 100% { opacity: 1; }            color: #fff;
+
+            50% { opacity: 0.5; }        }
+
+        }        .dashboard-btn .icon-btn {
+
+            font-size: 1.7rem;
+
+        .sidebar-heading {            margin-right: 8px;
+
+            font-size: 0.75rem;            vertical-align: middle;
+
+            font-weight: 600;        }
+
+            color: var(--dark-text-secondary);        .dashboard-btn.sbl-skyblue {
+
+            text-transform: uppercase;            background: #217b9b;
+
+            letter-spacing: 0.1em;        }
+
+        }        .dashboard-btn.sbl-skyblue:hover {
+
+            background: #0d575a;
+
+        .main-content {        }
+
+            padding: 1.5rem;        
+
+        }        /* Developer specific styles */
+
+        .dev-metric {
+
+        @media (max-width: 768px) {            background: #28a745;
+
+            .sidebar-dark {        }
+
+                position: fixed;        .dev-metric:hover {
+
+                top: 56px;            background: #1e7e34;
+
+                left: -280px;        }
+
+                width: 280px;        .dev-critical {
+
+                height: calc(100vh - 56px);            background: #dc3545;
+
+                z-index: 1000;        }
+
+                transition: left 0.3s ease;        .dev-critical:hover {
+
+            }            background: #c82333;
+
         }
 
-        .nav-tabs .nav-link.active {
-            background-color: white;
-            color: var(--dev-primary);
-            border-bottom: 3px solid var(--dev-primary);
-        }
-    </style>
-</head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <i class="bi bi-gear-fill me-2"></i>
-                Developer Private Section
-            </a>
-            <div class="navbar-nav ms-auto">
-                <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle me-1"></i>
-                        <span id="user-name">Developer</span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Perfil</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Configuración</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+            .sidebar-dark.show {        .dev-warning {
+
+                left: 0;            background: #ffc107;
+
+            }            color: #212529;
+
+        }        }
+
+    </style>        .dev-warning:hover {
+
+</head>            background: #e0a800;
+
+<body>        }
+
+    <!-- Navigation Header -->        .dev-info {
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-dark-custom">            background: #0dcaf0;
+
+        <div class="container-fluid">            color: #212529;
+
+            <a class="navbar-brand d-flex align-items-center" href="#">        }
+
+                <i class="bi bi-code-slash text-primary me-2 fs-4"></i>        .dev-info:hover {
+
+                <span class="fw-bold">Developer Portal</span>            background: #3dd5f3;
+
+                <span class="badge bg-primary ms-2">v2.1</span>        }
+
+            </a>        
+
+                    /* Charts container */
+
+            <!-- Mobile menu button -->        .chart-container {
+
+            <button class="navbar-toggler d-md-none" type="button" onclick="toggleSidebar()">            background: #fff;
+
+                <span class="navbar-toggler-icon"></span>            border-radius: 8px;
+
+            </button>            padding: 20px;
+
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+            <div class="d-flex align-items-center">            margin-bottom: 20px;
+
+                <!-- Notifications -->        }
+
+                <div class="dropdown me-3">        
+
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle position-relative" type="button" data-bs-toggle="dropdown">        /* Developer badge */
+
+                        <i class="bi bi-bell"></i>        .dev-badge {
+
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>            background: #dc3545;
+
+                    </button>            color: #fff;
+
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" style="min-width: 300px;">            font-size: 0.75rem;
+
+                        <li class="dropdown-header">Notificaciones</li>            font-weight: 700;
+
+                        <li><a class="dropdown-item" href="#">            padding: 4px 8px;
+
+                            <i class="bi bi-exclamation-triangle text-warning me-2"></i>            border-radius: 4px;
+
+                            <div class="d-flex flex-column">            letter-spacing: 1px;
+
+                                <strong>Sistema actualizado</strong>        }
+
+                                <small class="text-muted">Nueva versión 2.1 disponible</small>        
+
+                            </div>        /* Responsive */
+
+                        </a></li>        @media (max-width: 768px) {
+
+                        <li><a class="dropdown-item" href="#">            .sidebar {
+
+                            <i class="bi bi-info-circle text-info me-2"></i>                transform: translateX(-100%);
+
+                            <div class="d-flex flex-column">            }
+
+                                <strong>API endpoint añadido</strong>            
+
+                                <small class="text-muted">Nuevo endpoint de calibraciones</small>            .sidebar.show {
+
+                            </div>                transform: translateX(0);
+
+                        </a></li>            }
+
+                        <li><a class="dropdown-item" href="#">            
+
+                            <i class="bi bi-bug text-danger me-2"></i>            .main-content { 
+
+                            <div class="d-flex flex-column">                margin-left: 0; 
+
+                                <strong>Bug reportado</strong>                width: 100%; 
+
+                                <small class="text-muted">Error en validación de usuarios</small>            }
+
+                            </div>            
+
+                        </a></li>            .content-wrapper { 
+
+                        <li><hr class="dropdown-divider"></li>                padding: 15px; 
+
+                        <li><a class="dropdown-item text-center" href="#"><small>Ver todas las notificaciones</small></a></li>            }
+
+                    </ul>            
+
+                </div>            .dashboard-grid { 
+
+                                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+
+                <!-- User menu -->                gap: 15px; 
+
+                <div class="dropdown">            }
+
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">        }
+
+                        <i class="bi bi-person-circle me-1"></i>        
+
+                        Developer        @media (max-width: 576px) {
+
+                    </button>            .dashboard-grid { 
+
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">                grid-template-columns: 1fr; 
+
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i> Perfil</a></li>            }
+
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i> Configuración</a></li>        }
+
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-question-circle me-2"></i> Ayuda</a></li>
+
+                        <li><hr class="dropdown-divider"></li>        .kpi-card {
+
+                        <li><a class="dropdown-item" href="../internal/"><i class="bi bi-arrow-left me-2"></i> Portal Interno</a></li>            background: white;
+
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a></li>            border-radius: 12px;
+
+                    </ul>            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+                </div>            transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+            </div>            border-left: 4px solid var(--dev-primary);
+
+        </div>        }
+
     </nav>
 
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-2 sidebar">
-                <nav class="nav flex-column p-3">
-                    <a class="nav-link active" href="#" onclick="showSection('dashboard')">
-                        <i class="bi bi-speedometer2"></i>Dashboard
-                    </a>
-                    <a class="nav-link" href="#" onclick="showSection('incidents')">
-                        <i class="bi bi-exclamation-triangle"></i>Incidencias
-                    </a>
-                    <a class="nav-link" href="#" onclick="showSection('changes')">
-                        <i class="bi bi-arrow-repeat"></i>Gestión de Cambios
-                    </a>
+        .kpi-card:hover {
+
+    <div class="container-fluid">            transform: translateY(-5px);
+
+        <div class="row">            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+
+            <!-- Sidebar -->        }
+
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar-dark collapse" id="sidebarMenu">
+
+                <div class="position-sticky pt-3">        .kpi-card.critical {
+
+                    <ul class="nav flex-column">            border-left-color: var(--dev-danger);
+
+                        <li class="nav-item">        }
+
+                            <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+
+                                <i class="bi bi-speedometer2 me-2"></i>        .kpi-card.warning {
+
+                                Dashboard            border-left-color: var(--dev-warning);
+
+                            </a>        }
+
+                        </li>
+
+                        <li class="nav-item">        .kpi-card.success {
+
+                            <a class="nav-link" href="#" onclick="showSection('system-info')">            border-left-color: var(--dev-success);
+
+                                <i class="bi bi-info-square me-2"></i>        }
+
+                                Info del Sistema
+
+                            </a>        .kpi-value {
+
+                        </li>            font-size: 2.5rem;
+
+                        <li class="nav-item">            font-weight: 700;
+
+                            <a class="nav-link" href="#" onclick="showSection('database')">            line-height: 1;
+
+                                <i class="bi bi-database me-2"></i>        }
+
+                                Base de Datos
+
+                            </a>        .kpi-label {
+
+                        </li>            font-size: 0.9rem;
+
+                        <li class="nav-item">            color: var(--dev-secondary);
+
+                            <a class="nav-link" href="#" onclick="showSection('api-docs')">            text-transform: uppercase;
+
+                                <i class="bi bi-book me-2"></i>            letter-spacing: 0.5px;
+
+                                API Docs        }
+
+                            </a>
+
+                        </li>        .status-badge {
+
+                        <li class="nav-item">            padding: 4px 12px;
+
+                            <a class="nav-link" href="#" onclick="showSection('logs')">            border-radius: 20px;
+
+                                <i class="bi bi-journal-text me-2"></i>            font-size: 0.75rem;
+
+                                Logs            font-weight: 600;
+
+                            </a>            text-transform: uppercase;
+
+                        </li>        }
+
+                        <li class="nav-item">
+
+                            <a class="nav-link" href="#" onclick="showSection('code-editor')">        .status-good {
+
+                                <i class="bi bi-code me-2"></i>            background-color: #d1e7dd;
+
+                                Editor de Código            color: #0f5132;
+
+                            </a>        }
+
+                        </li>
+
+                        <li class="nav-item">        .status-warning {
+
+                            <a class="nav-link" href="#" onclick="showSection('performance')">            background-color: #fff3cd;
+
+                                <i class="bi bi-graph-up me-2"></i>            color: #664d03;
+
+                                Performance        }
+
+                            </a>
+
+                        </li>        .status-critical {
+
+                        <li class="nav-item">            background-color: #f8d7da;
+
+                            <a class="nav-link" href="#" onclick="showSection('security')">            color: #721c24;
+
+                                <i class="bi bi-shield-check me-2"></i>        }
+
+                                Seguridad
+
+                            </a>        .chart-container {
+
+                        </li>            background: white;
+
+                        <li class="nav-item">            border-radius: 12px;
+
+                            <a class="nav-link" href="#" onclick="showSection('tools')">            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+                                <i class="bi bi-tools me-2"></i>            padding: 20px;
+
+                                Herramientas            margin-bottom: 20px;
+
+                            </a>        }
+
+                        </li>
+
+                        <li class="nav-item">        .loading-spinner {
+
+                            <a class="nav-link" href="#" onclick="showSection('settings')">            display: flex;
+
+                                <i class="bi bi-gear me-2"></i>            justify-content: center;
+
+                                Configuración            align-items: center;
+
+                            </a>            height: 200px;
+
+                        </li>        }
+
+                    </ul>
+
+        .alert-item {
+
+                    <hr style="border-color: var(--dark-border);">            border-left: 4px solid;
+
+                                margin-bottom: 10px;
+
+                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">        }
+
+                        <span>Accesos Rápidos</span>
+
+                    </h6>        .alert-critical {
+
+                    <ul class="nav flex-column mb-2">            border-left-color: var(--dev-danger);
+
+                        <li class="nav-item">        }
+
+                            <a class="nav-link" href="../internal/" target="_blank">
+
+                                <i class="bi bi-house me-2"></i>        .alert-warning {
+
+                                Portal Interno            border-left-color: var(--dev-warning);
+
+                            </a>        }
+
+                        </li>
+
+                        <li class="nav-item">        .alert-info {
+
+                            <a class="nav-link" href="../../" target="_blank">            border-left-color: var(--dev-info);
+
+                                <i class="bi bi-globe me-2"></i>        }
+
+                                Portal Principal
+
+                            </a>        .metric-trend {
+
+                        </li>            display: flex;
+
+                        <li class="nav-item">            align-items: center;
+
+                            <a class="nav-link" href="https://github.com/LourdesAvila31/SBL_InstrumentsValidation_System" target="_blank">            gap: 5px;
+
+                                <i class="bi bi-github me-2"></i>            font-size: 0.85rem;
+
+                                GitHub Repository        }
+
+                            </a>
+
+                        </li>        .trend-up {
+
+                        <li class="nav-item">            color: var(--dev-success);
+
+                            <a class="nav-link" href="#" onclick="showSection('terminal')">        }
+
+                                <i class="bi bi-terminal me-2"></i>
+
+                                Terminal        .trend-down {
+
+                            </a>            color: var(--dev-danger);
+
+                        </li>        }
+
+                    </ul>
+
+        .trend-stable {
+
+                    <hr style="border-color: var(--dark-border);">            color: var(--dev-secondary);
+
+                            }
+
+                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+
+                        <span>Estado del Sistema</span>        .real-time-indicator {
+
+                    </h6>            display: inline-flex;
+
+                    <div class="px-3">            align-items: center;
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">            gap: 5px;
+
+                            <small>CPU</small>            color: var(--dev-success);
+
+                            <small class="text-primary" id="cpu-usage">45%</small>            font-size: 0.8rem;
+
+                        </div>        }
+
+                        <div class="progress progress-dark mb-3">
+
+                            <div class="progress-bar bg-primary" style="width: 45%" id="cpu-bar"></div>        .pulse {
+
+                        </div>            animation: pulse 2s infinite;
+
+                                }
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+
+                            <small>RAM</small>        @keyframes pulse {
+
+                            <small class="text-warning" id="ram-usage">67%</small>            0% { opacity: 1; }
+
+                        </div>            50% { opacity: 0.5; }
+
+                        <div class="progress progress-dark mb-3">            100% { opacity: 1; }
+
+                            <div class="progress-bar bg-warning" style="width: 67%" id="ram-bar"></div>        }
+
+                        </div>
+
+                                .section-header {
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">            background: white;
+
+                            <small>Disco</small>            border-radius: 12px;
+
+                            <small class="text-success" id="disk-usage">23%</small>            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+
+                        </div>            padding: 20px;
+
+                        <div class="progress progress-dark">            margin-bottom: 20px;
+
+                            <div class="progress-bar bg-success" style="width: 23%" id="disk-bar"></div>        }
+
+                        </div>
+
+                    </div>        .tab-content {
+
+                </div>            background: white;
+
+            </nav>            border-radius: 12px;
+
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+            <!-- Main content -->            padding: 20px;
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">        }
+
+                <!-- Dashboard Section -->
+
+                <div id="dashboard" class="content-section">        .nav-tabs .nav-link {
+
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" style="border-color: var(--dark-border) !important;">            border: none;
+
+                        <h1 class="h2">            border-radius: 8px 8px 0 0;
+
+                            <i class="bi bi-speedometer2 text-primary me-2"></i>            color: var(--dev-secondary);
+
+                            Dashboard del Desarrollador            font-weight: 500;
+
+                        </h1>        }
+
+                        <div class="btn-toolbar mb-2 mb-md-0">
+
+                            <div class="btn-group me-2">        .nav-tabs .nav-link.active {
+
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="refreshDashboard()">            background-color: white;
+
+                                    <i class="bi bi-arrow-clockwise me-1"></i>            color: var(--dev-primary);
+
+                                    Actualizar            border-bottom: 3px solid var(--dev-primary);
+
+                                </button>        }
+
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="exportReport()">    </style>
+
+                                    <i class="bi bi-download me-1"></i></head>
+
+                                    Exportar<body>
+
+                                </button>    <!-- Navbar -->
+
+                            </div>    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+                        </div>        <div class="container-fluid">
+
+                    </div>            <a class="navbar-brand" href="#">
+
+                <i class="bi bi-gear-fill me-2"></i>
+
+                    <!-- Stats Cards -->                Developer Private Section
+
+                    <div class="row mb-4">            </a>
+
+                        <div class="col-xl-3 col-md-6 mb-4">            <div class="navbar-nav ms-auto">
+
+                            <div class="card stats-card">                <div class="nav-item dropdown">
+
+                                <div class="card-body text-center">                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+
+                                    <div class="row no-gutters align-items-center">                        <i class="bi bi-person-circle me-1"></i>
+
+                                        <div class="col">                        <span id="user-name">Developer</span>
+
+                                            <div class="metric-label text-primary mb-1">Uptime del Sistema</div>                    </a>
+
+                                            <div class="metric-number text-primary" id="system-uptime">99.8%</div>                    <ul class="dropdown-menu">
+
+                                            <div class="d-flex align-items-center justify-content-center mt-2">                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Perfil</a></li>
+
+                                                <i class="bi bi-activity floating-icon text-primary fs-1"></i>                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Configuración</a></li>
+
+                                            </div>                        <li><hr class="dropdown-divider"></li>
+
+                                        </div>                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</a></li>
+
+                                    </div>                    </ul>
+
+                                </div>                </div>
+
+                            </div>            </div>
+
+                        </div>        </div>
+
+    </nav>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+
+                            <div class="card stats-card">    <div class="container-fluid">
+
+                                <div class="card-body text-center">        <div class="row">
+
+                                    <div class="row no-gutters align-items-center">            <!-- Sidebar -->
+
+                                        <div class="col">            <div class="col-md-2 sidebar">
+
+                                            <div class="metric-label text-success mb-1">APIs Activas</div>                <nav class="nav flex-column p-3">
+
+                                            <div class="metric-number text-success" id="active-apis">12</div>                    <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+
+                                            <div class="d-flex align-items-center justify-content-center mt-2">                        <i class="bi bi-speedometer2"></i>Dashboard
+
+                                                <i class="bi bi-server floating-icon text-success fs-1"></i>                    </a>
+
+                                            </div>                    <a class="nav-link" href="#" onclick="showSection('incidents')">
+
+                                        </div>                        <i class="bi bi-exclamation-triangle"></i>Incidencias
+
+                                    </div>                    </a>
+
+                                </div>                    <a class="nav-link" href="#" onclick="showSection('changes')">
+
+                            </div>                        <i class="bi bi-arrow-repeat"></i>Gestión de Cambios
+
+                        </div>                    </a>
+
                     <a class="nav-link" href="#" onclick="showSection('documents')">
-                        <i class="bi bi-file-text"></i>Documentación
-                    </a>
-                    <a class="nav-link" href="#" onclick="showSection('vendors')">
-                        <i class="bi bi-building"></i>Proveedores
-                    </a>
-                    <a class="nav-link" href="#" onclick="showSection('alerts')">
-                        <i class="bi bi-bell"></i>Alertas
-                    </a>
-                    <a class="nav-link" href="#" onclick="showSection('monitoring')">
-                        <i class="bi bi-activity"></i>Monitoreo
-                    </a>
-                    <a class="nav-link" href="#" onclick="showSection('audit')">
-                        <i class="bi bi-search"></i>Auditoría
-                    </a>
-                </nav>
+
+                        <div class="col-xl-3 col-md-6 mb-4">                        <i class="bi bi-file-text"></i>Documentación
+
+                            <div class="card stats-card">                    </a>
+
+                                <div class="card-body text-center">                    <a class="nav-link" href="#" onclick="showSection('vendors')">
+
+                                    <div class="row no-gutters align-items-center">                        <i class="bi bi-building"></i>Proveedores
+
+                                        <div class="col">                    </a>
+
+                                            <div class="metric-label text-warning mb-1">Errores (24h)</div>                    <a class="nav-link" href="#" onclick="showSection('alerts')">
+
+                                            <div class="metric-number text-warning" id="error-count">3</div>                        <i class="bi bi-bell"></i>Alertas
+
+                                            <div class="d-flex align-items-center justify-content-center mt-2">                    </a>
+
+                                                <i class="bi bi-exclamation-triangle floating-icon text-warning fs-1"></i>                    <a class="nav-link" href="#" onclick="showSection('monitoring')">
+
+                                            </div>                        <i class="bi bi-activity"></i>Monitoreo
+
+                                        </div>                    </a>
+
+                                    </div>                    <a class="nav-link" href="#" onclick="showSection('audit')">
+
+                                </div>                        <i class="bi bi-search"></i>Auditoría
+
+                            </div>                    </a>
+
+                        </div>                </nav>
+
             </div>
 
-            <!-- Main Content -->
-            <div class="col-md-10 main-content">
-                <!-- Dashboard Section -->
-                <div id="dashboard-section" class="section active">
-                    <div class="section-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h2 class="mb-1">Dashboard de Monitoreo</h2>
-                                <p class="text-muted mb-0">Vista general del estado del sistema</p>
-                            </div>
-                            <div class="real-time-indicator">
-                                <div class="pulse" style="width: 8px; height: 8px; background-color: var(--dev-success); border-radius: 50%;"></div>
-                                Tiempo Real
-                            </div>
-                        </div>
-                    </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
 
-                    <!-- KPIs Row -->
-                    <div class="row mb-4" id="kpis-container">
-                        <!-- KPIs will be loaded here -->
-                        <div class="col-12 text-center">
-                            <div class="loading-spinner">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Cargando...</span>
-                                </div>
-                            </div>
-                        </div>
+                            <div class="card stats-card">            <!-- Main Content -->
+
+                                <div class="card-body text-center">            <div class="col-md-10 main-content">
+
+                                    <div class="row no-gutters align-items-center">                <!-- Dashboard Section -->
+
+                                        <div class="col">                <div id="dashboard-section" class="section active">
+
+                                            <div class="metric-label text-info mb-1">Usuarios Online</div>                    <div class="section-header">
+
+                                            <div class="metric-number text-info" id="online-users">47</div>                        <div class="d-flex justify-content-between align-items-center">
+
+                                            <div class="d-flex align-items-center justify-content-center mt-2">                            <div>
+
+                                                <i class="bi bi-people floating-icon text-info fs-1"></i>                                <h2 class="mb-1">Dashboard de Monitoreo</h2>
+
+                                            </div>                                <p class="text-muted mb-0">Vista general del estado del sistema</p>
+
+                                        </div>                            </div>
+
+                                    </div>                            <div class="real-time-indicator">
+
+                                </div>                                <div class="pulse" style="width: 8px; height: 8px; background-color: var(--dev-success); border-radius: 50%;"></div>
+
+                            </div>                                Tiempo Real
+
+                        </div>                            </div>
+
+                    </div>                        </div>
+
                     </div>
 
                     <!-- Charts Row -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="chart-container">
-                                <h5 class="mb-3">Tendencia de Rendimiento</h5>
-                                <canvas id="performanceChart" width="400" height="200"></canvas>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="chart-container">
-                                <h5 class="mb-3">Timeline de Incidencias</h5>
-                                <canvas id="incidentsChart" width="400" height="200"></canvas>
-                            </div>
-                        </div>
+
+                    <div class="row mb-4">                    <!-- KPIs Row -->
+
+                        <div class="col-lg-8">                    <div class="row mb-4" id="kpis-container">
+
+                            <div class="card card-dark">                        <!-- KPIs will be loaded here -->
+
+                                <div class="card-header">                        <div class="col-12 text-center">
+
+                                    <h5 class="card-title mb-0">                            <div class="loading-spinner">
+
+                                        <i class="bi bi-graph-up text-primary me-2"></i>                                <div class="spinner-border text-primary" role="status">
+
+                                        Uso del Sistema (Últimos 7 días)                                    <span class="visually-hidden">Cargando...</span>
+
+                                    </h5>                                </div>
+
+                                </div>                            </div>
+
+                                <div class="card-body">                        </div>
+
+                                    <canvas id="usageChart" style="max-height: 300px;"></canvas>                    </div>
+
+                                </div>
+
+                            </div>                    <!-- Charts Row -->
+
+                        </div>                    <div class="row">
+
+                        <div class="col-lg-4">                        <div class="col-md-6">
+
+                            <div class="card card-dark">                            <div class="chart-container">
+
+                                <div class="card-header">                                <h5 class="mb-3">Tendencia de Rendimiento</h5>
+
+                                    <h5 class="card-title mb-0">                                <canvas id="performanceChart" width="400" height="200"></canvas>
+
+                                        <i class="bi bi-pie-chart text-primary me-2"></i>                            </div>
+
+                                        Distribución de APIs                        </div>
+
+                                    </h5>                        <div class="col-md-6">
+
+                                </div>                            <div class="chart-container">
+
+                                <div class="card-body">                                <h5 class="mb-3">Timeline de Incidencias</h5>
+
+                                    <canvas id="apiChart" style="max-height: 300px;"></canvas>                                <canvas id="incidentsChart" width="400" height="200"></canvas>
+
+                                </div>                            </div>
+
+                            </div>                        </div>
+
+                        </div>                    </div>
+
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="chart-container">
-                                <h5 class="mb-3">Actividad de Usuarios</h5>
-                                <canvas id="userActivityChart" width="400" height="200"></canvas>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="chart-container">
-                                <h5 class="mb-3">Salud del Sistema</h5>
-                                <canvas id="systemHealthChart" width="400" height="200"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Incidents Section -->
-                <div id="incidents-section" class="section" style="display: none;">
-                    <div class="section-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h2 class="mb-1">Gestión de Incidencias</h2>
-                                <p class="text-muted mb-0">Registro y seguimiento de incidentes del sistema</p>
-                            </div>
-                            <button class="btn btn-primary" onclick="showCreateIncidentModal()">
-                                <i class="bi bi-plus-circle me-2"></i>Nueva Incidencia
-                            </button>
-                        </div>
+                    <!-- Activity and Server Status -->                        <div class="col-md-6">
+
+                    <div class="row">                            <div class="chart-container">
+
+                        <div class="col-lg-6">                                <h5 class="mb-3">Actividad de Usuarios</h5>
+
+                            <div class="card card-dark">                                <canvas id="userActivityChart" width="400" height="200"></canvas>
+
+                                <div class="card-header">                            </div>
+
+                                    <h5 class="card-title mb-0">                        </div>
+
+                                        <i class="bi bi-clock text-primary me-2"></i>                        <div class="col-md-6">
+
+                                        Actividad Reciente                            <div class="chart-container">
+
+                                    </h5>                                <h5 class="mb-3">Salud del Sistema</h5>
+
+                                </div>                                <canvas id="systemHealthChart" width="400" height="200"></canvas>
+
+                                <div class="card-body">                            </div>
+
+                                    <div class="list-group list-group-flush" id="recent-activity">                        </div>
+
+                                        <div class="list-group-item">                    </div>
+
+                                            <div class="d-flex w-100 justify-content-between">                </div>
+
+                                                <h6 class="mb-1">API Calibraciones actualizada</h6>
+
+                                                <small class="text-muted">hace 3 min</small>                <!-- Incidents Section -->
+
+                                            </div>                <div id="incidents-section" class="section" style="display: none;">
+
+                                            <p class="mb-1">Se agregó validación adicional para instrumentos.</p>                    <div class="section-header">
+
+                                            <small class="text-success">✓ Completado</small>                        <div class="d-flex justify-content-between align-items-center">
+
+                                        </div>                            <div>
+
+                                        <div class="list-group-item">                                <h2 class="mb-1">Gestión de Incidencias</h2>
+
+                                            <div class="d-flex w-100 justify-content-between">                                <p class="text-muted mb-0">Registro y seguimiento de incidentes del sistema</p>
+
+                                                <h6 class="mb-1">Base de datos optimizada</h6>                            </div>
+
+                                                <small class="text-muted">hace 15 min</small>                            <button class="btn btn-primary" onclick="showCreateIncidentModal()">
+
+                                            </div>                                <i class="bi bi-plus-circle me-2"></i>Nueva Incidencia
+
+                                            <p class="mb-1">Índices actualizados para mejorar performance.</p>                            </button>
+
+                                            <small class="text-success">✓ Completado</small>                        </div>
+
+                                        </div>                    </div>
+
+                                        <div class="list-group-item">
+
+                                            <div class="d-flex w-100 justify-content-between">                    <!-- Filters -->
+
+                                                <h6 class="mb-1">Backup completado</h6>                    <div class="row mb-3">
+
+                                                <small class="text-muted">hace 1 hora</small>                        <div class="col-md-3">
+
+                                            </div>                            <select class="form-select" id="incident-severity-filter">
+
+                                            <p class="mb-1">Respaldo automático ejecutado exitosamente.</p>                                <option value="">Todas las severidades</option>
+
+                                            <small class="text-success">✓ Completado</small>                                <option value="low">Baja</option>
+
+                                        </div>                                <option value="medium">Media</option>
+
+                                    </div>                                <option value="high">Alta</option>
+
+                                </div>                                <option value="critical">Crítica</option>
+
+                            </div>                            </select>
+
+                        </div>                        </div>
+
+                        <div class="col-lg-6">                        <div class="col-md-3">
+
+                            <div class="card card-dark">                            <select class="form-select" id="incident-status-filter">
+
+                                <div class="card-header">                                <option value="">Todos los estados</option>
+
+                                    <h5 class="card-title mb-0">                                <option value="open">Abierto</option>
+
+                                        <i class="bi bi-shield-check text-primary me-2"></i>                                <option value="in_progress">En progreso</option>
+
+                                        Estado de Seguridad                                <option value="resolved">Resuelto</option>
+
+                                    </h5>                                <option value="closed">Cerrado</option>
+
+                                </div>                            </select>
+
+                                <div class="card-body">                        </div>
+
+                                    <div class="row text-center mb-3">                        <div class="col-md-4">
+
+                                        <div class="col-4">                            <input type="text" class="form-control" id="incident-search" placeholder="Buscar incidencias...">
+
+                                            <div class="d-flex flex-column align-items-center">                        </div>
+
+                                                <i class="bi bi-shield-fill-check text-success fs-1 mb-2"></i>                        <div class="col-md-2">
+
+                                                <div class="metric-label">SSL/TLS</div>                            <button class="btn btn-outline-secondary w-100" onclick="loadIncidents()">
+
+                                                <small class="text-success">Activo</small>                                <i class="bi bi-search"></i> Filtrar
+
+                                            </div>                            </button>
+
+                                        </div>                        </div>
+
+                                        <div class="col-4">                    </div>
+
+                                            <div class="d-flex flex-column align-items-center">
+
+                                                <i class="bi bi-key-fill text-success fs-1 mb-2"></i>                    <!-- Incidents Table -->
+
+                                                <div class="metric-label">API Keys</div>                    <div class="table-responsive">
+
+                                                <small class="text-success">Seguras</small>                        <table class="table table-hover">
+
+                                            </div>                            <thead class="table-dark">
+
+                                        </div>                                <tr>
+
+                                        <div class="col-4">                                    <th>ID</th>
+
+                                            <div class="d-flex flex-column align-items-center">                                    <th>Título</th>
+
+                                                <i class="bi bi-exclamation-triangle-fill text-warning fs-1 mb-2"></i>                                    <th>Severidad</th>
+
+                                                <div class="metric-label">Updates</div>                                    <th>Estado</th>
+
+                                                <small class="text-warning">Pendientes</small>                                    <th>Reportado por</th>
+
+                                            </div>                                    <th>Asignado a</th>
+
+                                        </div>                                    <th>Fecha</th>
+
+                                    </div>                                    <th>Acciones</th>
+
+                                    <div class="alert alert-warning" role="alert">                                </tr>
+
+                                        <i class="bi bi-info-circle me-2"></i>                            </thead>
+
+                                        <strong>Recordatorio:</strong> Hay 2 actualizaciones de seguridad pendientes.                            <tbody id="incidents-table-body">
+
+                                        <a href="#" class="alert-link">Instalar ahora</a>                                <!-- Incidents will be loaded here -->
+
+                                    </div>                            </tbody>
+
+                                </div>                        </table>
+
+                            </div>                    </div>
+
+                        </div>                </div>
+
                     </div>
 
-                    <!-- Filters -->
-                    <div class="row mb-3">
-                        <div class="col-md-3">
-                            <select class="form-select" id="incident-severity-filter">
-                                <option value="">Todas las severidades</option>
-                                <option value="low">Baja</option>
-                                <option value="medium">Media</option>
-                                <option value="high">Alta</option>
-                                <option value="critical">Crítica</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-select" id="incident-status-filter">
-                                <option value="">Todos los estados</option>
-                                <option value="open">Abierto</option>
-                                <option value="in_progress">En progreso</option>
-                                <option value="resolved">Resuelto</option>
-                                <option value="closed">Cerrado</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" id="incident-search" placeholder="Buscar incidencias...">
-                        </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-outline-secondary w-100" onclick="loadIncidents()">
-                                <i class="bi bi-search"></i> Filtrar
-                            </button>
-                        </div>
-                    </div>
+                </div>                <!-- Documents Section -->
 
-                    <!-- Incidents Table -->
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Título</th>
-                                    <th>Severidad</th>
-                                    <th>Estado</th>
-                                    <th>Reportado por</th>
-                                    <th>Asignado a</th>
-                                    <th>Fecha</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="incidents-table-body">
-                                <!-- Incidents will be loaded here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Documents Section -->
                 <div id="documents-section" class="section" style="display: none;">
-                    <div class="section-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h2 class="mb-1">Gestión de Documentación</h2>
-                                <p class="text-muted mb-0">SOP, AppCare, Handover y documentos operativos</p>
-                            </div>
-                            <button class="btn btn-primary" onclick="showCreateDocumentModal()">
+
+                <!-- Other sections will be loaded here dynamically -->                    <div class="section-header">
+
+                <div id="dynamic-content" class="d-none">                        <div class="d-flex justify-content-between align-items-center">
+
+                    <!-- Dynamic content loaded via JavaScript -->                            <div>
+
+                </div>                                <h2 class="mb-1">Gestión de Documentación</h2>
+
+            </main>                                <p class="text-muted mb-0">SOP, AppCare, Handover y documentos operativos</p>
+
+        </div>                            </div>
+
+    </div>                            <button class="btn btn-primary" onclick="showCreateDocumentModal()">
+
                                 <i class="bi bi-file-plus me-2"></i>Nuevo Documento
-                            </button>
-                        </div>
-                    </div>
 
-                    <!-- Document Tabs -->
-                    <ul class="nav nav-tabs" id="document-tabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="sop-tab" data-bs-toggle="tab" data-bs-target="#sop" type="button" role="tab">
-                                <i class="bi bi-file-text me-2"></i>SOP
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="appcare-tab" data-bs-toggle="tab" data-bs-target="#appcare" type="button" role="tab">
-                                <i class="bi bi-tools me-2"></i>AppCare
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="handover-tab" data-bs-toggle="tab" data-bs-target="#handover" type="button" role="tab">
+    <!-- Bootstrap JS -->                            </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>                        </div>
+
+                        </div>
+
+    <!-- CodeMirror -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>                    <!-- Document Tabs -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/php/php.min.js"></script>                    <ul class="nav nav-tabs" id="document-tabs" role="tablist">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/sql/sql.min.js"></script>                        <li class="nav-item" role="presentation">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>                            <button class="nav-link active" id="sop-tab" data-bs-toggle="tab" data-bs-target="#sop" type="button" role="tab">
+
+                                    <i class="bi bi-file-text me-2"></i>SOP
+
+    <!-- Custom Scripts -->                            </button>
+
+    <script src="assets/js/developer-panel.js"></script>                        </li>
+
+                            <li class="nav-item" role="presentation">
+
+    <script>                            <button class="nav-link" id="appcare-tab" data-bs-toggle="tab" data-bs-target="#appcare" type="button" role="tab">
+
+        // Initialize charts and dashboard                                <i class="bi bi-tools me-2"></i>AppCare
+
+        document.addEventListener('DOMContentLoaded', function() {                            </button>
+
+            initializeCharts();                        </li>
+
+            startRealTimeUpdates();                        <li class="nav-item" role="presentation">
+
+        });                            <button class="nav-link" id="handover-tab" data-bs-toggle="tab" data-bs-target="#handover" type="button" role="tab">
+
                                 <i class="bi bi-arrow-right-circle me-2"></i>Handover
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="all-docs-tab" data-bs-toggle="tab" data-bs-target="#all-docs" type="button" role="tab">
-                                <i class="bi bi-files me-2"></i>Todos
-                            </button>
-                        </li>
-                    </ul>
 
-                    <div class="tab-content" id="document-tab-content">
-                        <div class="tab-pane fade show active" id="sop" role="tabpanel">
-                            <div id="sop-documents">
-                                <!-- SOP documents will be loaded here -->
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="appcare" role="tabpanel">
-                            <div id="appcare-documents">
-                                <!-- AppCare documents will be loaded here -->
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="handover" role="tabpanel">
-                            <div id="handover-documents">
-                                <!-- Handover documents will be loaded here -->
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="all-docs" role="tabpanel">
-                            <div id="all-documents">
-                                <!-- All documents will be loaded here -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        function initializeCharts() {                            </button>
 
-                <!-- Other sections will be implemented similarly -->
+            // Usage Chart                        </li>
+
+            const usageCtx = document.getElementById('usageChart').getContext('2d');                        <li class="nav-item" role="presentation">
+
+            new Chart(usageCtx, {                            <button class="nav-link" id="all-docs-tab" data-bs-toggle="tab" data-bs-target="#all-docs" type="button" role="tab">
+
+                type: 'line',                                <i class="bi bi-files me-2"></i>Todos
+
+                data: {                            </button>
+
+                    labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],                        </li>
+
+                    datasets: [{                    </ul>
+
+                        label: 'Requests por día',
+
+                        data: [1200, 1500, 1100, 1800, 1400, 2200, 1900],                    <div class="tab-content" id="document-tab-content">
+
+                        borderColor: 'var(--accent-blue)',                        <div class="tab-pane fade show active" id="sop" role="tabpanel">
+
+                        backgroundColor: 'rgba(31, 111, 235, 0.1)',                            <div id="sop-documents">
+
+                        tension: 0.4,                                <!-- SOP documents will be loaded here -->
+
+                        fill: true                            </div>
+
+                    }]                        </div>
+
+                },                        <div class="tab-pane fade" id="appcare" role="tabpanel">
+
+                options: {                            <div id="appcare-documents">
+
+                    responsive: true,                                <!-- AppCare documents will be loaded here -->
+
+                    maintainAspectRatio: false,                            </div>
+
+                    plugins: {                        </div>
+
+                        legend: { labels: { color: 'var(--dark-text-primary)' } }                        <div class="tab-pane fade" id="handover" role="tabpanel">
+
+                    },                            <div id="handover-documents">
+
+                    scales: {                                <!-- Handover documents will be loaded here -->
+
+                        x: {                             </div>
+
+                            ticks: { color: 'var(--dark-text-secondary)' },                        </div>
+
+                            grid: { color: 'var(--dark-border)' }                        <div class="tab-pane fade" id="all-docs" role="tabpanel">
+
+                        },                            <div id="all-documents">
+
+                        y: {                                 <!-- All documents will be loaded here -->
+
+                            ticks: { color: 'var(--dark-text-secondary)' },                            </div>
+
+                            grid: { color: 'var(--dark-border)' }                        </div>
+
+                        }                    </div>
+
+                    }                </div>
+
+                }
+
+            });                <!-- Other sections will be implemented similarly -->
+
                 <div id="changes-section" class="section" style="display: none;">
-                    <h2>Gestión de Cambios</h2>
-                    <p>Esta sección está en desarrollo...</p>
-                </div>
 
-                <div id="vendors-section" class="section" style="display: none;">
-                    <h2>Gestión de Proveedores</h2>
-                    <p>Esta sección está en desarrollo...</p>
-                </div>
+            // API Distribution Chart                    <h2>Gestión de Cambios</h2>
 
-                <div id="alerts-section" class="section" style="display: none;">
-                    <h2>Sistema de Alertas</h2>
-                    <p>Esta sección está en desarrollo...</p>
-                </div>
+            const apiCtx = document.getElementById('apiChart').getContext('2d');                    <p>Esta sección está en desarrollo...</p>
 
-                <div id="monitoring-section" class="section" style="display: none;">
-                    <h2>Monitoreo Avanzado</h2>
-                    <p>Esta sección está en desarrollo...</p>
-                </div>
+            new Chart(apiCtx, {                </div>
 
-                <div id="audit-section" class="section" style="display: none;">
-                    <h2>Auditoría y Logs</h2>
-                    <p>Esta sección está en desarrollo...</p>
-                </div>
-            </div>
-        </div>
-    </div>
+                type: 'doughnut',
 
-    <!-- Bootstrap 5 JS -->
+                data: {                <div id="vendors-section" class="section" style="display: none;">
+
+                    labels: ['Calibraciones', 'Usuarios', 'Instrumentos', 'Reportes'],                    <h2>Gestión de Proveedores</h2>
+
+                    datasets: [{                    <p>Esta sección está en desarrollo...</p>
+
+                        data: [35, 25, 20, 20],                </div>
+
+                        backgroundColor: [
+
+                            'var(--accent-blue)',                <div id="alerts-section" class="section" style="display: none;">
+
+                            'var(--accent-green)',                    <h2>Sistema de Alertas</h2>
+
+                            'var(--accent-yellow)',                    <p>Esta sección está en desarrollo...</p>
+
+                            'var(--accent-red)'                </div>
+
+                        ]
+
+                    }]                <div id="monitoring-section" class="section" style="display: none;">
+
+                },                    <h2>Monitoreo Avanzado</h2>
+
+                options: {                    <p>Esta sección está en desarrollo...</p>
+
+                    responsive: true,                </div>
+
+                    maintainAspectRatio: false,
+
+                    plugins: {                <div id="audit-section" class="section" style="display: none;">
+
+                        legend: {                     <h2>Auditoría y Logs</h2>
+
+                            labels: { color: 'var(--dark-text-primary)' },                    <p>Esta sección está en desarrollo...</p>
+
+                            position: 'bottom'                </div>
+
+                        }            </div>
+
+                    }        </div>
+
+                }    </div>
+
+            });
+
+        }    <!-- Bootstrap 5 JS -->
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        // Global variables
-        let charts = {};
-        let currentSection = 'dashboard';
-        let refreshInterval;
 
-        // Initialize application
-        document.addEventListener('DOMContentLoaded', function() {
-            loadUserInfo();
+        function showSection(sectionName) {    
+
+            // Update navigation    <script>
+
+            document.querySelectorAll('.nav-link').forEach(link => {        // Global variables
+
+                link.classList.remove('active');        let charts = {};
+
+            });        let currentSection = 'dashboard';
+
+            event.target.classList.add('active');        let refreshInterval;
+
+
+
+            // Show/hide sections        // Initialize application
+
+            const dashboard = document.getElementById('dashboard');        document.addEventListener('DOMContentLoaded', function() {
+
+            const dynamicContent = document.getElementById('dynamic-content');            loadUserInfo();
+
             loadDashboardData();
-            startRealTimeUpdates();
-        });
 
-        // Navigation functions
-        function showSection(sectionName) {
+            if (sectionName === 'dashboard') {            startRealTimeUpdates();
+
+                dashboard.classList.remove('d-none');        });
+
+                dynamicContent.classList.add('d-none');
+
+                return;        // Navigation functions
+
+            }        function showSection(sectionName) {
+
             // Hide all sections
-            document.querySelectorAll('.section').forEach(section => {
-                section.style.display = 'none';
+
+            dashboard.classList.add('d-none');            document.querySelectorAll('.section').forEach(section => {
+
+            dynamicContent.classList.remove('d-none');                section.style.display = 'none';
+
             });
-            
-            // Remove active class from all nav links
-            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+
+            // Load section content            
+
+            loadSectionContent(sectionName);            // Remove active class from all nav links
+
+        }            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+
                 link.classList.remove('active');
-            });
-            
-            // Show selected section
-            document.getElementById(sectionName + '-section').style.display = 'block';
-            
-            // Add active class to selected nav link
-            event.target.classList.add('active');
-            
-            currentSection = sectionName;
-            
-            // Load section-specific data
-            switch(sectionName) {
+
+        function loadSectionContent(sectionName) {            });
+
+            const content = document.getElementById('dynamic-content');            
+
+                        // Show selected section
+
+            // Show loading spinner            document.getElementById(sectionName + '-section').style.display = 'block';
+
+            content.innerHTML = `            
+
+                <div class="text-center py-5">            // Add active class to selected nav link
+
+                    <div class="spinner-border text-primary" role="status">            event.target.classList.add('active');
+
+                        <span class="visually-hidden">Cargando...</span>            
+
+                    </div>            currentSection = sectionName;
+
+                    <p class="mt-3">Cargando ${getSectionTitle(sectionName)}...</p>            
+
+                </div>            // Load section-specific data
+
+            `;            switch(sectionName) {
+
                 case 'dashboard':
-                    loadDashboardData();
-                    break;
-                case 'incidents':
-                    loadIncidents();
-                    break;
+
+            // Simulate loading and show content                    loadDashboardData();
+
+            setTimeout(() => {                    break;
+
+                content.innerHTML = getSectionHTML(sectionName);                case 'incidents':
+
+            }, 500);                    loadIncidents();
+
+        }                    break;
+
                 case 'documents':
-                    loadDocuments();
-                    break;
-                // Add other cases as needed
-            }
-        }
 
-        // API functions
-        async function apiCall(endpoint, options = {}) {
-            try {
-                const response = await fetch(`/backend/developer/${endpoint}`, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...options.headers
-                    },
-                    ...options
+        function getSectionTitle(sectionName) {                    loadDocuments();
+
+            const titles = {                    break;
+
+                'system-info': 'Información del Sistema',                // Add other cases as needed
+
+                'database': 'Base de Datos',            }
+
+                'api-docs': 'Documentación de APIs',        }
+
+                'logs': 'Logs del Sistema',
+
+                'code-editor': 'Editor de Código',        // API functions
+
+                'performance': 'Monitoreo de Performance',        async function apiCall(endpoint, options = {}) {
+
+                'security': 'Panel de Seguridad',            try {
+
+                'tools': 'Herramientas de Desarrollo',                const response = await fetch(`/backend/developer/${endpoint}`, {
+
+                'settings': 'Configuración del Sistema',                    headers: {
+
+                'terminal': 'Terminal'                        'Content-Type': 'application/json',
+
+            };                        ...options.headers
+
+            return titles[sectionName] || sectionName;                    },
+
+        }                    ...options
+
                 });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                return await response.json();
-            } catch (error) {
-                console.error('API call failed:', error);
-                showError('Error de conexión con el servidor');
-                return null;
-            }
-        }
 
-        // User info functions
-        async function loadUserInfo() {
-            const response = await apiCall('dashboard.php?path=developer-info');
-            if (response && response.success) {
-                document.getElementById('user-name').textContent = response.data.nombre_completo;
-            }
-        }
+        function getSectionHTML(sectionName) {                
 
-        // Dashboard functions
-        async function loadDashboardData() {
-            await loadKPIs();
-            await loadCharts();
-        }
+            // This would normally load from separate PHP files                if (!response.ok) {
 
-        async function loadKPIs() {
-            const response = await apiCall('dashboard.php?path=kpis');
-            if (response && response.success) {
-                renderKPIs(response.data);
-            }
-        }
+            // For now, we'll return basic templates                    throw new Error(`HTTP error! status: ${response.status}`);
 
-        function renderKPIs(kpis) {
-            const container = document.getElementById('kpis-container');
-            
-            const kpiCards = [
-                {
-                    title: 'Incidencias Abiertas',
-                    value: kpis.incidents.open_incidents,
-                    status: kpis.incidents.status,
-                    trend: kpis.incidents.trend,
-                    icon: 'exclamation-triangle'
-                },
-                {
-                    title: 'Disponibilidad Sistema',
-                    value: kpis.performance.uptime_percentage + '%',
-                    status: kpis.performance.status,
-                    icon: 'activity'
-                },
-                {
-                    title: 'Alertas de Seguridad',
-                    value: kpis.security.security_alerts,
-                    status: kpis.security.status,
-                    icon: 'shield-exclamation'
-                },
-                {
-                    title: 'Score Cumplimiento',
-                    value: kpis.compliance.compliance_score + '%',
-                    status: kpis.compliance.status,
-                    icon: 'check-circle'
-                }
+                            }
+
+            const templates = {                
+
+                'system-info': `                return await response.json();
+
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" style="border-color: var(--dark-border) !important;">            } catch (error) {
+
+                        <h1 class="h2"><i class="bi bi-info-square text-primary me-2"></i>Información del Sistema</h1>                console.error('API call failed:', error);
+
+                    </div>                showError('Error de conexión con el servidor');
+
+                    <div class="row">                return null;
+
+                        <div class="col-lg-6 mb-4">            }
+
+                            <div class="card card-dark">        }
+
+                                <div class="card-header"><h5>Servidor</h5></div>
+
+                                <div class="card-body">        // User info functions
+
+                                    <table class="table table-dark table-striped">        async function loadUserInfo() {
+
+                                        <tr><td>Sistema Operativo</td><td>Windows Server 2022</td></tr>            const response = await apiCall('dashboard.php?path=developer-info');
+
+                                        <tr><td>Versión PHP</td><td>8.2.0</td></tr>            if (response && response.success) {
+
+                                        <tr><td>MySQL</td><td>8.0.35</td></tr>                document.getElementById('user-name').textContent = response.data.nombre_completo;
+
+                                        <tr><td>Apache</td><td>2.4.58</td></tr>            }
+
+                                    </table>        }
+
+                                </div>
+
+                            </div>        // Dashboard functions
+
+                        </div>        async function loadDashboardData() {
+
+                        <div class="col-lg-6 mb-4">            await loadKPIs();
+
+                            <div class="card card-dark">            await loadCharts();
+
+                                <div class="card-header"><h5>Aplicación</h5></div>        }
+
+                                <div class="card-body">
+
+                                    <table class="table table-dark table-striped">        async function loadKPIs() {
+
+                                        <tr><td>Versión</td><td>2.1.0</td></tr>            const response = await apiCall('dashboard.php?path=kpis');
+
+                                        <tr><td>Última actualización</td><td>26 Sep 2025</td></tr>            if (response && response.success) {
+
+                                        <tr><td>Debug</td><td><span class="badge bg-danger">Activado</span></td></tr>                renderKPIs(response.data);
+
+                                        <tr><td>Ambiente</td><td>Desarrollo</td></tr>            }
+
+                                    </table>        }
+
+                                </div>
+
+                            </div>        function renderKPIs(kpis) {
+
+                        </div>            const container = document.getElementById('kpis-container');
+
+                    </div>            
+
+                `,            const kpiCards = [
+
+                'terminal': `                {
+
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" style="border-color: var(--dark-border) !important;">                    title: 'Incidencias Abiertas',
+
+                        <h1 class="h2"><i class="bi bi-terminal text-primary me-2"></i>Terminal</h1>                    value: kpis.incidents.open_incidents,
+
+                    </div>                    status: kpis.incidents.status,
+
+                    <div class="card card-dark">                    trend: kpis.incidents.trend,
+
+                        <div class="card-body">                    icon: 'exclamation-triangle'
+
+                            <div class="terminal-output" id="terminal-output">                },
+
+                                <div>SBL Developer Terminal v1.0</div>                {
+
+                                <div>Type 'help' for available commands</div>                    title: 'Disponibilidad Sistema',
+
+                                <div style="margin-top: 10px;">                    value: kpis.performance.uptime_percentage + '%',
+
+                                    <span style="color: #00ff88;">developer@sbl</span>:<span style="color: #4a9eff;">~</span>$ <span class="cursor">|</span>                    status: kpis.performance.status,
+
+                                </div>                    icon: 'activity'
+
+                            </div>                },
+
+                            <div class="mt-3">                {
+
+                                <div class="input-group">                    title: 'Alertas de Seguridad',
+
+                                    <span class="input-group-text" style="background: var(--dark-bg-tertiary); color: var(--dark-text-primary); border-color: var(--dark-border);">$</span>                    value: kpis.security.security_alerts,
+
+                                    <input type="text" class="form-control" id="terminal-input"                     status: kpis.security.status,
+
+                                           style="background: var(--dark-bg-tertiary); color: var(--dark-text-primary); border-color: var(--dark-border);"                    icon: 'shield-exclamation'
+
+                                           placeholder="Ingresa un comando..." onkeypress="handleTerminalInput(event)">                },
+
+                                </div>                {
+
+                            </div>                    title: 'Score Cumplimiento',
+
+                        </div>                    value: kpis.compliance.compliance_score + '%',
+
+                    </div>                    status: kpis.compliance.status,
+
+                `                    icon: 'check-circle'
+
+            };                }
+
             ];
 
-            container.innerHTML = kpiCards.map(kpi => `
-                <div class="col-md-3 mb-3">
-                    <div class="kpi-card ${kpi.status} card h-100">
-                        <div class="card-body text-center">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <i class="bi bi-${kpi.icon} fs-3 text-${getStatusColor(kpi.status)}"></i>
-                                <span class="status-badge status-${kpi.status}">${getStatusText(kpi.status)}</span>
-                            </div>
-                            <div class="kpi-value text-${getStatusColor(kpi.status)}">${kpi.value}</div>
-                            <div class="kpi-label">${kpi.title}</div>
-                            ${kpi.trend ? `
-                                <div class="metric-trend trend-${kpi.trend}">
-                                    <i class="bi bi-${getTrendIcon(kpi.trend)}"></i>
-                                    ${getTrendText(kpi.trend)}
+            return templates[sectionName] || `
+
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" style="border-color: var(--dark-border) !important;">            container.innerHTML = kpiCards.map(kpi => `
+
+                    <h1 class="h2">${getSectionTitle(sectionName)}</h1>                <div class="col-md-3 mb-3">
+
+                </div>                    <div class="kpi-card ${kpi.status} card h-100">
+
+                <div class="card card-dark">                        <div class="card-body text-center">
+
+                    <div class="card-body">                            <div class="d-flex justify-content-between align-items-start mb-2">
+
+                        <p>Esta sección está en desarrollo. Pronto estará disponible.</p>                                <i class="bi bi-${kpi.icon} fs-3 text-${getStatusColor(kpi.status)}"></i>
+
+                        <div class="alert alert-info" role="alert">                                <span class="status-badge status-${kpi.status}">${getStatusText(kpi.status)}</span>
+
+                            <i class="bi bi-info-circle me-2"></i>                            </div>
+
+                            Funcionalidad de ${getSectionTitle(sectionName)} será implementada próximamente.                            <div class="kpi-value text-${getStatusColor(kpi.status)}">${kpi.value}</div>
+
+                        </div>                            <div class="kpi-label">${kpi.title}</div>
+
+                    </div>                            ${kpi.trend ? `
+
+                </div>                                <div class="metric-trend trend-${kpi.trend}">
+
+            `;                                    <i class="bi bi-${getTrendIcon(kpi.trend)}"></i>
+
+        }                                    ${getTrendText(kpi.trend)}
+
                                 </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
 
-        async function loadCharts() {
-            const response = await apiCall('dashboard.php?path=charts');
-            if (response && response.success) {
-                renderCharts(response.data);
-            }
-        }
+        function handleTerminalInput(event) {                            ` : ''}
 
-        function renderCharts(chartData) {
-            // Performance Trend Chart
-            const perfCtx = document.getElementById('performanceChart').getContext('2d');
-            if (charts.performance) charts.performance.destroy();
-            
-            charts.performance = new Chart(perfCtx, {
-                type: 'line',
-                data: {
-                    labels: chartData.performance_trend.map(item => item.time),
-                    datasets: [{
-                        label: 'Tiempo de Respuesta (ms)',
-                        data: chartData.performance_trend.map(item => item.response_time),
-                        borderColor: '#0d6efd',
-                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                        tension: 0.4
-                    }, {
-                        label: 'CPU %',
-                        data: chartData.performance_trend.map(item => item.cpu),
-                        borderColor: '#198754',
-                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
+            if (event.key === 'Enter') {                        </div>
+
+                const input = event.target;                    </div>
+
+                const command = input.value.trim();                </div>
+
+                const output = document.getElementById('terminal-output');            `).join('');
+
                         }
-                    }
-                }
-            });
+
+                // Add command to output
+
+                output.innerHTML += `<div><span style="color: #00ff88;">developer@sbl</span>:<span style="color: #4a9eff;">~</span>$ ${command}</div>`;        async function loadCharts() {
+
+                            const response = await apiCall('dashboard.php?path=charts');
+
+                // Process command            if (response && response.success) {
+
+                if (command === 'help') {                renderCharts(response.data);
+
+                    output.innerHTML += `<div style="margin: 10px 0;">            }
+
+                        Available commands:<br>        }
+
+                        - help: Show this help<br>
+
+                        - status: Show system status<br>        function renderCharts(chartData) {
+
+                        - clear: Clear terminal<br>            // Performance Trend Chart
+
+                        - php -v: Show PHP version<br>            const perfCtx = document.getElementById('performanceChart').getContext('2d');
+
+                        - mysql --version: Show MySQL version            if (charts.performance) charts.performance.destroy();
+
+                    </div>`;            
+
+                } else if (command === 'status') {            charts.performance = new Chart(perfCtx, {
+
+                    output.innerHTML += `<div style="margin: 10px 0; color: #00ff88;">                type: 'line',
+
+                        System Status: Online<br>                data: {
+
+                        Database: Connected<br>                    labels: chartData.performance_trend.map(item => item.time),
+
+                        APIs: 12 active<br>                    datasets: [{
+
+                        Uptime: 99.8%                        label: 'Tiempo de Respuesta (ms)',
+
+                    </div>`;                        data: chartData.performance_trend.map(item => item.response_time),
+
+                } else if (command === 'clear') {                        borderColor: '#0d6efd',
+
+                    output.innerHTML = `                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+
+                        <div>SBL Developer Terminal v1.0</div>                        tension: 0.4
+
+                        <div>Type 'help' for available commands</div>                    }, {
+
+                    `;                        label: 'CPU %',
+
+                } else if (command.startsWith('php')) {                        data: chartData.performance_trend.map(item => item.cpu),
+
+                    output.innerHTML += `<div style="margin: 10px 0;">PHP 8.2.0 (cli) (built: Dec  6 2022 15:31:23) ( NTS Visual C++ 2019 x64 )</div>`;                        borderColor: '#198754',
+
+                } else if (command.includes('mysql')) {                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
+
+                    output.innerHTML += `<div style="margin: 10px 0;">mysql  Ver 8.0.35 for Win64 on x86_64</div>`;                        tension: 0.4
+
+                } else if (command) {                    }]
+
+                    output.innerHTML += `<div style="margin: 10px 0; color: #ff6b6b;">Command not found: ${command}</div>`;                },
+
+                }                options: {
+
+                                    responsive: true,
+
+                // Add new prompt                    scales: {
+
+                output.innerHTML += `<div style="margin-top: 10px;"><span style="color: #00ff88;">developer@sbl</span>:<span style="color: #4a9eff;">~</span>$ <span class="cursor">|</span></div>`;                        y: {
+
+                                            beginAtZero: true
+
+                // Clear input and scroll to bottom                        }
+
+                input.value = '';                    }
+
+                output.scrollTop = output.scrollHeight;                }
+
+            }            });
+
+        }
 
             // Incidents Timeline Chart
-            const incCtx = document.getElementById('incidentsChart').getContext('2d');
-            if (charts.incidents) charts.incidents.destroy();
-            
-            charts.incidents = new Chart(incCtx, {
-                type: 'bar',
+
+        function startRealTimeUpdates() {            const incCtx = document.getElementById('incidentsChart').getContext('2d');
+
+            setInterval(() => {            if (charts.incidents) charts.incidents.destroy();
+
+                updateSystemMetrics();            
+
+            }, 5000);            charts.incidents = new Chart(incCtx, {
+
+        }                type: 'bar',
+
                 data: {
-                    labels: chartData.incident_timeline.map(item => item.date),
-                    datasets: [{
-                        label: 'Total Incidencias',
-                        data: chartData.incident_timeline.map(item => item.total),
-                        backgroundColor: '#0dcaf0'
+
+        function updateSystemMetrics() {                    labels: chartData.incident_timeline.map(item => item.date),
+
+            // Simulate real-time updates                    datasets: [{
+
+            const cpuUsage = Math.floor(Math.random() * 30) + 30;                        label: 'Total Incidencias',
+
+            const ramUsage = Math.floor(Math.random() * 40) + 50;                        data: chartData.incident_timeline.map(item => item.total),
+
+            const diskUsage = Math.floor(Math.random() * 10) + 20;                        backgroundColor: '#0dcaf0'
+
                     }, {
-                        label: 'Críticas',
-                        data: chartData.incident_timeline.map(item => item.critical),
-                        backgroundColor: '#dc3545'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
 
-            // User Activity Chart
+            document.getElementById('cpu-usage').textContent = cpuUsage + '%';                        label: 'Críticas',
+
+            document.getElementById('cpu-bar').style.width = cpuUsage + '%';                        data: chartData.incident_timeline.map(item => item.critical),
+
+                                    backgroundColor: '#dc3545'
+
+            document.getElementById('ram-usage').textContent = ramUsage + '%';                    }]
+
+            document.getElementById('ram-bar').style.width = ramUsage + '%';                },
+
+                            options: {
+
+            document.getElementById('disk-usage').textContent = diskUsage + '%';                    responsive: true,
+
+            document.getElementById('disk-bar').style.width = diskUsage + '%';                    scales: {
+
+                        y: {
+
+            // Update other metrics                            beginAtZero: true
+
+            document.getElementById('online-users').textContent = Math.floor(Math.random() * 20) + 40;                        }
+
+        }                    }
+
+                }
+
+        function refreshDashboard() {            });
+
+            location.reload();
+
+        }            // User Activity Chart
+
             const userCtx = document.getElementById('userActivityChart').getContext('2d');
-            if (charts.userActivity) charts.userActivity.destroy();
-            
-            charts.userActivity = new Chart(userCtx, {
-                type: 'line',
-                data: {
-                    labels: chartData.user_activity.map(item => item.hour),
-                    datasets: [{
-                        label: 'Usuarios Activos',
-                        data: chartData.user_activity.map(item => item.users),
-                        borderColor: '#ffc107',
-                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
 
-            // System Health Chart
-            const healthCtx = document.getElementById('systemHealthChart').getContext('2d');
-            if (charts.systemHealth) charts.systemHealth.destroy();
-            
+        function exportReport() {            if (charts.userActivity) charts.userActivity.destroy();
+
+            alert('Función de exportación en desarrollo');            
+
+        }            charts.userActivity = new Chart(userCtx, {
+
+                type: 'line',
+
+        function logout() {                data: {
+
+            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {                    labels: chartData.user_activity.map(item => item.hour),
+
+                window.location.href = '../internal/';                    datasets: [{
+
+            }                        label: 'Usuarios Activos',
+
+        }                        data: chartData.user_activity.map(item => item.users),
+
+                        borderColor: '#ffc107',
+
+        function toggleSidebar() {                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+
+            const sidebar = document.getElementById('sidebarMenu');                        fill: true,
+
+            sidebar.classList.toggle('show');                        tension: 0.4
+
+        }                    }]
+
+                },
+
+        // Close sidebar on mobile when clicking outside                options: {
+
+        document.addEventListener('click', function(event) {                    responsive: true,
+
+            const sidebar = document.getElementById('sidebarMenu');                    scales: {
+
+            const toggleButton = document.querySelector('.navbar-toggler');                        y: {
+
+                                        beginAtZero: true
+
+            if (window.innerWidth <= 768 &&                         }
+
+                !sidebar.contains(event.target) &&                     }
+
+                !toggleButton.contains(event.target)) {                }
+
+                sidebar.classList.remove('show');            });
+
+            }
+
+        });            // System Health Chart
+
+    </script>            const healthCtx = document.getElementById('systemHealthChart').getContext('2d');
+
+</body>            if (charts.systemHealth) charts.systemHealth.destroy();
+
+</html>            
             charts.systemHealth = new Chart(healthCtx, {
                 type: 'line',
                 data: {
