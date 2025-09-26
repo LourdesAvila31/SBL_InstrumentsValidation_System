@@ -105,34 +105,8 @@ do {
         $rol = $_SESSION['rol'] ?? '';
         $rolNormalizado = strtolower($rol);
 
-        require_once dirname(__DIR__, 3) . '/Core/permissions.php';
-        $canAccessService = check_permission('clientes_gestionar');
-
-        $requestedContext = null;
-        $normalizedRequested = normalize_portal_slug($requestedPortal);
-        if ($normalizedRequested !== null) {
-            $requestedContext = $normalizedRequested;
-        } elseif (!empty($portalHint)) {
-            $requestedContext = $portalHint;
-        } elseif (!empty($_SESSION['app_context'])) {
-            $requestedContext = strtolower((string) $_SESSION['app_context']);
-        }
-
-        $allowedContexts = [];
-        if ($rolNormalizado === 'cliente') {
-            $allowedContexts[] = 'tenant';
-        } else {
-            $allowedContexts[] = 'internal';
-            if ($canAccessService) {
-                $allowedContexts[] = 'service';
-            }
-        }
-
-        $finalContext = $allowedContexts[0];
-        if ($requestedContext !== null && in_array($requestedContext, $allowedContexts, true)) {
-            $finalContext = $requestedContext;
-        }
-
+        // Sistema Interno - Solo contexto interno
+        $finalContext = 'internal';
         $_SESSION['app_context'] = $finalContext;
         $_SESSION['portal_slug'] = $finalContext;
 
@@ -149,16 +123,12 @@ do {
             $_SESSION['portal_id'] = (int) $row['role_portal_id'];
         }
         $baseUrl = Paths::baseUrl();
-        $backendDashboard = $baseUrl === '/'
-            ? '/backend/dashboard/dashboard.php'
-            : rtrim($baseUrl, '/') . '/backend/dashboard/dashboard.php';
-        $redirects = [
-            'internal' => $backendDashboard,
-            'tenant'   => Paths::app('tenant/index.html'),
-            'service'  => Paths::app('service/index.html'),
-        ];
-
-        $destino = $redirects[$finalContext] ?? $redirects['internal'];
+        $modernDashboard = $baseUrl === '/'
+            ? '/backend/dashboard/modern_dashboard.php'
+            : rtrim($baseUrl, '/') . '/backend/dashboard/modern_dashboard.php';
+        
+        // Sistema Interno - Solo redirige al dashboard interno
+        $destino = $modernDashboard;
 
         break;
     }

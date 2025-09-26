@@ -1,0 +1,366 @@
+/* Estilos específicos para el Selector de Portal Developer */
+
+.portal-selector-container {
+    background: linear-gradient(135deg, #0d575a 0%, #217b9b 100%);
+    min-height: 100vh;
+    padding: 40px 20px;
+}
+
+.selector-header {
+    text-align: center;
+    color: white;
+    margin-bottom: 50px;
+}
+
+.selector-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.selector-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+.portal-comparison {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.portal-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    transition: all 0.4s ease;
+    cursor: pointer;
+    position: relative;
+    height: 100%;
+}
+
+.portal-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(90deg, var(--sbl-primary) 0%, var(--sbl-secondary) 100%);
+}
+
+.portal-card:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(13, 87, 90, 0.2);
+}
+
+.portal-card-header {
+    padding: 40px 30px 20px;
+    text-align: center;
+    position: relative;
+}
+
+.portal-icon-large {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--sbl-primary) 0%, var(--sbl-secondary) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+    color: white;
+    font-size: 3rem;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 25px rgba(13, 87, 90, 0.2);
+}
+
+.portal-card:hover .portal-icon-large {
+    transform: scale(1.1) rotate(10deg);
+    box-shadow: 0 15px 35px rgba(13, 87, 90, 0.3);
+}
+
+.portal-type-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 8px 15px;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-superadmin {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.badge-operational {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.portal-title-large {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--sbl-primary);
+    margin-bottom: 10px;
+}
+
+.portal-subtitle {
+    color: #6c757d;
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+
+.portal-card-body {
+    padding: 0 30px 30px;
+}
+
+.portal-description-large {
+    color: #495057;
+    line-height: 1.7;
+    margin-bottom: 25px;
+    font-size: 1.05rem;
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-list li {
+    padding: 10px 0;
+    color: #495057;
+    font-size: 1rem;
+    position: relative;
+    padding-left: 35px;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.feature-list li:last-child {
+    border-bottom: none;
+}
+
+.feature-list li::before {
+    content: '\f058';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 0;
+    color: var(--sbl-success);
+    font-size: 1.2rem;
+}
+
+.access-button {
+    width: 100%;
+    padding: 15px 25px;
+    background: linear-gradient(135deg, var(--sbl-primary) 0%, var(--sbl-secondary) 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.access-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.access-button:hover::before {
+    left: 100%;
+}
+
+.access-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(13, 87, 90, 0.4);
+}
+
+.info-cards {
+    margin-top: 60px;
+}
+
+.info-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+    border: 1px solid #e9ecef;
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.info-icon {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, var(--sbl-primary) 0%, var(--sbl-secondary) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: white;
+    font-size: 2rem;
+}
+
+.info-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--sbl-primary);
+    margin-bottom: 15px;
+}
+
+.info-description {
+    color: #6c757d;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* Responsividad mejorada */
+@media (max-width: 992px) {
+    .selector-header h1 {
+        font-size: 2rem;
+    }
+    
+    .portal-card {
+        margin-bottom: 30px;
+    }
+    
+    .portal-card-header {
+        padding: 30px 20px 15px;
+    }
+    
+    .portal-card-body {
+        padding: 0 20px 25px;
+    }
+    
+    .portal-icon-large {
+        width: 80px;
+        height: 80px;
+        font-size: 2.5rem;
+    }
+    
+    .portal-title-large {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .portal-selector-container {
+        padding: 20px 15px;
+    }
+    
+    .selector-header {
+        margin-bottom: 30px;
+    }
+    
+    .selector-header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .selector-subtitle {
+        font-size: 1rem;
+    }
+    
+    .info-cards {
+        margin-top: 40px;
+    }
+    
+    .info-card {
+        margin-bottom: 20px;
+        padding: 20px;
+    }
+    
+    .info-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.8rem;
+    }
+}
+
+/* Animaciones adicionales */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.portal-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.portal-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.info-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.info-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.info-card:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+/* Estados de hover mejorados */
+.portal-card .feature-list li {
+    transition: all 0.2s ease;
+}
+
+.portal-card:hover .feature-list li {
+    color: var(--sbl-primary);
+}
+
+.portal-card:hover .feature-list li::before {
+    color: var(--sbl-secondary);
+    transform: scale(1.2);
+}
+
+/* Efectos de glow */
+.portal-card:hover::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, var(--sbl-primary), var(--sbl-secondary));
+    border-radius: 22px;
+    z-index: -1;
+    opacity: 0.3;
+    filter: blur(6px);
+}

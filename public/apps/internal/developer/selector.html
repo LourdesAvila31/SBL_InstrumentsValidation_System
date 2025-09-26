@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function() {
+            var marker = '/public/';
+            var path = window.location.pathname || '';
+            var index = path.indexOf(marker);
+            var base = index !== -1 ? path.slice(0, index + marker.length) : '/';
+            if (!base.endsWith('/')) {
+                base += '/';
+            }
+            window.BASE_URL = base === '/' ? '' : base.replace(/\/$/, '');
+            document.write('<base href="' + base + '">');
+        })();
+    </script>
+    <!-- Rutas relativizadas para cumplir ISO 17025/NOM-059 -->
+    
+    <title>Selector de Portal Developer | SBL Pharma</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!-- Bootstrap, Montserrat, FontAwesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/styles/master-theme.css">
+    <link rel="stylesheet" href="assets/styles/internal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+    
+    <style>
+        body {
+            background: #f4f6f8;
+            font-family: 'Montserrat', Arial, sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        
+        .portal-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--sbl-primary) 0%, var(--sbl-secondary) 100%);
+        }
+        
+        .portal-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(13, 87, 90, 0.2);
+            border-color: var(--sbl-primary);
+        }
+        
+        .portal-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--sbl-primary) 0%, var(--sbl-secondary) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            color: white;
+            font-size: 2.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .portal-card:hover .portal-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 8px 20px rgba(13, 87, 90, 0.3);
+        }
+        
+        .portal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--sbl-primary);
+            margin-bottom: 15px;
+        }
+        
+        .portal-description {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .portal-features {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        
+        .portal-features li {
+            padding: 8px 0;
+            color: #495057;
+            font-size: 0.95rem;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .portal-features li::before {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            color: var(--sbl-success);
+        }
+        
+        .portal-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 15px;
+        }
+        
+        .badge-admin {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-operational {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .access-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 4px solid var(--sbl-primary);
+        }
+        
+        .quick-links {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 25px;
+            margin-top: 30px;
+        }
+        
+        .quick-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: var(--sbl-light);
+            color: var(--sbl-primary);
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin: 5px;
+            font-weight: 500;
+        }
+        
+        .quick-link-btn:hover {
+            background: var(--sbl-primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .portal-card {
+                padding: 25px 20px;
+                margin-bottom: 20px;
+            }
+            
+            .portal-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+            }
+            
+            .portal-title {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+        <button class="sidebar-close" id="sidebarToggle"><i class="fa fa-times"></i></button>
+        <div class="sidebar-logo">
+            <img src="assets/images/sbl-logo.png" alt="Logo SBL Pharma" class="logo"/>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-link" href="apps/internal/index.html" data-section="menu">
+                <i class="fa fa-tachometer-alt"></i>
+                <span>MENÚ</span>
+            </a>
+            <a class="nav-link" href="apps/internal/instrumentos/list_gages.html" data-section="instrumentos">
+                <i class="fa fa-boxes-stacked"></i>
+                <span>INSTRUMENTOS</span>
+            </a>
+            <a class="nav-link" href="apps/internal/planeacion/list_planning.html" data-section="planeacion">
+                <i class="fa fa-calendar-alt"></i>
+                <span>PLANEACIÓN</span>
+            </a>
+            <a class="nav-link" href="apps/internal/calibraciones/list_calibrations.html" data-section="calibraciones">
+                <i class="fa fa-balance-scale"></i>
+                <span>CALIBRACIONES</span>
+            </a>
+            <a class="nav-link" href="apps/internal/reportes/reports.html" data-section="reportes">
+                <i class="fa fa-file-alt"></i>
+                <span>REPORTES</span>
+            </a>
+            <a class="nav-link" href="apps/internal/configuracion/api_tokens.html" data-section="configuracion" data-requires-api-tokens="manage">
+                <i class="fa fa-key"></i>
+                <span>TOKENS API</span>
+            </a>
+            <a class="nav-link" href="apps/internal/ayuda/help_center.html" data-section="ayuda">
+                <i class="fa fa-circle-question"></i>
+                <span>AYUDA</span>
+            </a>
+            <a class="nav-link" href="apps/internal/calidad/index.html" data-section="calidad">
+                <i class="fa fa-award"></i>
+                <span>CALIDAD</span>
+            </a>
+            <a class="nav-link active" href="apps/internal/developer/selector.html" data-section="developer">
+                <i class="fa fa-code"></i>
+                <span>DEVELOPER</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <i class="fa fa-bars menu-toggle" id="sidebarOpen"></i>
+                <span class="topbar-title">Selector de Portal Developer</span>
+            </div>
+            <div class="topbar-icons">
+                <i class="fa fa-cog" id="btnSettings" title="Configuración"></i>
+                <i class="fa fa-search" id="btnSearch"></i>
+                <i class="fa fa-bell" id="btnBell"></i>
+                <div class="topbar-user-box">
+                    <i class="fa fa-user-circle" id="btnUser"></i>
+                    <span class="topbar-user" id="userName">Developer</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div class="dashboard-section">
+            <div class="dashboard-bar">
+                <i class="fas fa-code me-2"></i>
+                SELECCIONA TU PORTAL DEVELOPER
+            </div>
+
+            <!-- Información de Acceso -->
+            <div class="access-info">
+                <h5><i class="fas fa-info-circle me-2"></i>Información de Acceso</h5>
+                <p class="mb-0">
+                    <strong>Tienes acceso a dos portales especializados de developer:</strong> Cada uno está diseñado para diferentes tipos de tareas. 
+                    Selecciona el portal que mejor se adapte a tu actividad actual.
+                </p>
+            </div>
+
+            <!-- Selector de Portales -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="portal-card" onclick="accessPortal('dashboard')">
+                        <div class="portal-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="portal-title">Developer Dashboard</h3>
+                        <p class="portal-description">
+                            Panel administrativo completo con privilegios de superadministrador para gestión total del sistema.
+                        </p>
+                        
+                        <ul class="portal-features">
+                            <li>Gestión completa de usuarios</li>
+                            <li>Configuración avanzada del sistema</li>
+                            <li>Monitoreo administrativo</li>
+                            <li>Gestión de documentos corporativos</li>
+                            <li>Auditoría completa</li>
+                            <li>Gestión de backups</li>
+                            <li>Control de incidentes críticos</li>
+                        </ul>
+                        
+                        <div class="portal-badge badge-admin">
+                            Superadministrador
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="portal-card" onclick="accessPortal('private')">
+                        <div class="portal-icon">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <h3 class="portal-title">Developer Private Section</h3>
+                        <p class="portal-description">
+                            Sección privada especializada para desarrollo y operaciones con monitoreo en tiempo real.
+                        </p>
+                        
+                        <ul class="portal-features">
+                            <li>Dashboard de monitoreo en tiempo real</li>
+                            <li>Gestión de incidencias técnicas</li>
+                            <li>Control de cambios (Change Management)</li>
+                            <li>Documentación operativa</li>
+                            <li>Gestión de proveedores</li>
+                            <li>Sistema de alertas automáticas</li>
+                            <li>Métricas y KPIs operativos</li>
+                        </ul>
+                        
+                        <div class="portal-badge badge-operational">
+                            Operativo
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enlaces Rápidos -->
+            <div class="quick-links">
+                <h5><i class="fas fa-external-link-alt me-2"></i>Enlaces Rápidos</h5>
+                <div class="text-center">
+                    <a href="apps/internal/developer/dashboard.html" class="quick-link-btn">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard Administrativo
+                    </a>
+                    <a href="apps/developer/index.html" class="quick-link-btn">
+                        <i class="fas fa-code"></i>
+                        Sección Privada
+                    </a>
+                    <a href="apps/ticket-system/index.html" class="quick-link-btn">
+                        <i class="fas fa-ticket-alt"></i>
+                        Sistema de Tickets
+                    </a>
+                    <a href="admin_dashboard.html" class="quick-link-btn">
+                        <i class="fas fa-cogs"></i>
+                        Panel de Administración
+                    </a>
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="row mt-4">
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-clock fa-2x text-primary mb-3"></i>
+                            <h6>Tiempo Real</h6>
+                            <p class="small text-muted">Monitoreo y alertas en tiempo real con Socket.io</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-shield-alt fa-2x text-success mb-3"></i>
+                            <h6>Seguridad</h6>
+                            <p class="small text-muted">Control de acceso basado en roles (RBAC)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-history fa-2x text-info mb-3"></i>
+                            <h6>Auditoría</h6>
+                            <p class="small text-muted">Registro completo de todas las actividades</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Función para acceder a los portales
+        function accessPortal(type) {
+            if (type === 'dashboard') {
+                // Acceso al Developer Dashboard (Administrativo)
+                window.location.href = BASE_URL + '/apps/internal/developer/dashboard.html';
+            } else if (type === 'private') {
+                // Acceso al Developer Private Section (Operativo)
+                window.location.href = BASE_URL + '/apps/developer/index.html';
+            }
+        }
+
+        // Gestión del sidebar responsivo
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebarOpen = document.getElementById('sidebarOpen');
+            const mainContent = document.querySelector('.main-content');
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('show');
+                if (window.innerWidth <= 768) {
+                    if (sidebar.classList.contains('show')) {
+                        mainContent.style.marginLeft = '0';
+                    } else {
+                        mainContent.style.marginLeft = '0';
+                    }
+                }
+            }
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', toggleSidebar);
+            }
+
+            if (sidebarOpen) {
+                sidebarOpen.addEventListener('click', function() {
+                    sidebar.classList.add('show');
+                });
+            }
+
+            // Cerrar sidebar al hacer click fuera en móvil
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768) {
+                    if (!sidebar.contains(event.target) && !sidebarOpen.contains(event.target)) {
+                        sidebar.classList.remove('show');
+                    }
+                }
+            });
+
+            // Ajustar en resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('show');
+                    mainContent.style.marginLeft = '200px';
+                } else {
+                    mainContent.style.marginLeft = '0';
+                }
+            });
+        });
+
+        // Mostrar notificación de acceso
+        function showAccessNotification(portalName) {
+            const notification = document.createElement('div');
+            notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                <i class="fas fa-info-circle me-2"></i>
+                Accediendo a ${portalName}...
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+
+        // Agregar efectos de hover a las tarjetas
+        document.querySelectorAll('.portal-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Funciones adicionales del topbar
+        document.getElementById('btnSettings')?.addEventListener('click', function() {
+            window.location.href = BASE_URL + '/apps/internal/configuracion/settings.html';
+        });
+
+        document.getElementById('btnSearch')?.addEventListener('click', function() {
+            // Implementar búsqueda
+            alert('Función de búsqueda en desarrollo');
+        });
+
+        document.getElementById('btnBell')?.addEventListener('click', function() {
+            // Mostrar notificaciones
+            alert('Panel de notificaciones en desarrollo');
+        });
+
+        document.getElementById('btnUser')?.addEventListener('click', function() {
+            // Mostrar menú de usuario
+            alert('Menú de usuario en desarrollo');
+        });
+    </script>
+</body>
+</html>
