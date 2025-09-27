@@ -1,7 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Portal | SBL Pharma Internal System</title>
+    
     <script>
         (function() {
             var marker = '/public/';
@@ -11,1254 +14,248 @@
             if (!base.endsWith('/')) {
                 base += '/';
             }
-            window.BASE_URL = base === '/' ? '' : base.replace(/\/$/, '');
+            window.BASE_URL = base === '/' ? '' : base.replace(/\$/, '');
             document.write('<base href="' + base + '">');
         })();
     </script>
-    <!-- Rutas relativizadas para cumplir ISO 17025/NOM-059 -->
     
-    <title>Developer Private Section | SBL Pharma</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <!-- Bootstrap, Bootstrap Icons, Montserrat, FontAwesome -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="assets/styles/master-theme.css">
-    <link rel="stylesheet" href="assets/styles/internal.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link href="apps/developer/assets/css/developer.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    
-    <style>
-        :root {
-            --dev-primary: #0d575a;
-            --dev-secondary: #6c757d;
-            --dev-success: #28a745;
-            --dev-danger: #dc3545;
-            --dev-warning: #ffc107;
-            --dev-info: #0dcaf0;
-            --dev-light: #f8f9fa;
-            --dev-dark: #212529;
-            --dev-accent: #0c8c98;
-            --dev-skyblue: #217b9b;
-        }
-
-        body {
-            background: #f4f6f8;
-            font-family: 'Montserrat', Arial, sans-serif;
-            margin: 0;
-            overflow-x: hidden;
-        }
-        .sidebar {
-            position: fixed;
-            left: 0; 
-            top: 0;
-            width: 250px;
-            height: 100vh;
-            background: var(--dev-primary);
-            color: #fff;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            padding: 0;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-        }
-        
-        .sidebar-header {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .sidebar-logo {
-            color: #fff;
-            font-size: 1.2rem;
-            font-weight: 700;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .sidebar-nav {
-            flex: 1;
-            padding: 20px 0;
-        }
-        
-        .sidebar-nav .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-        }
-        
-        .sidebar-nav .nav-link:hover {
-            color: #fff;
-            background: rgba(255,255,255,0.1);
-            transform: translateX(5px);
-        }
-        
-        .sidebar-nav .nav-link.active {
-            color: #fff;
-            background: var(--dev-accent);
-            border-right: 3px solid #fff;
-        }
-        
-        .sidebar-nav .nav-link i {
-            width: 20px;
-            margin-right: 12px;
-            font-size: 1.1rem;
-        }
-        .main-content {
-            margin-left: 250px;
-            min-height: 100vh;
-            padding: 0;
-            width: calc(100% - 250px);
-            transition: margin-left 0.3s ease, width 0.3s ease;
-        }
-        .navbar {
-            background: var(--dev-dark) !important;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            z-index: 999;
-        }
-        
-        .navbar-brand {
-            font-weight: 700;
-            color: #fff !important;
-        }
-        
-        .navbar-nav .nav-link {
-            color: rgba(255,255,255,0.8) !important;
-        }
-        
-        .navbar-nav .nav-link:hover {
-            color: #fff !important;
-        }
-        .content-wrapper {
-            padding: 30px;
-            background: #f8f9fa;
-            min-height: calc(100vh - 56px);
-        }
-        
-        .section {
-            display: none;
-        }
-        
-        .section.active {
-            display: block;
-        }
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 18px;
-            margin-bottom: 18px;
-        }
-        .dashboard-grid.grid-5 {
-            grid-template-columns: repeat(5, 1fr);
-        }
-        .dashboard-grid.grid-4 {
-            grid-template-columns: repeat(4, 1fr);
-        }
-        .dashboard-btn {
-            background: #0c8c98;
-            color: #fff;
-            font-weight: 600;
-            border: none;
-            border-radius: 6px;
-            padding: 24px 12px 14px 12px;
-            min-width: 130px;
-            text-align: left;
-            font-size: 1.05rem;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: flex-start;
-            transition: background 0.18s, color 0.18s;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .dashboard-btn .panel-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
-            white-space: pre-line;
-        }
-        .dashboard-btn .panel-value {
-            font-size: 2.4rem;
-            font-weight: 700;
-            margin-bottom: 6px;
-            word-break: break-word;
-        }
-        .dashboard-btn:hover {
-            background: #217b9b;
-            color: #fff;
-        }
-        .dashboard-btn .icon-btn {
-            font-size: 1.7rem;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-        .dashboard-btn.sbl-skyblue {
-            background: #217b9b;
-        }
-        .dashboard-btn.sbl-skyblue:hover {
-            background: #0d575a;
-        }
-        
-        /* Developer specific styles */
-        .dev-metric {
-            background: #28a745;
-        }
-        .dev-metric:hover {
-            background: #1e7e34;
-        }
-        .dev-critical {
-            background: #dc3545;
-        }
-        .dev-critical:hover {
-            background: #c82333;
-        }
-        .dev-warning {
-            background: #ffc107;
-            color: #212529;
-        }
-        .dev-warning:hover {
-            background: #e0a800;
-        }
-        .dev-info {
-            background: #0dcaf0;
-            color: #212529;
-        }
-        .dev-info:hover {
-            background: #3dd5f3;
-        }
-        
-        /* Charts container */
-        .chart-container {
-            background: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        
-        /* Developer badge */
-        .dev-badge {
-            background: #dc3545;
-            color: #fff;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 4px 8px;
-            border-radius: 4px;
-            letter-spacing: 1px;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .sidebar.show {
-                transform: translateX(0);
-            }
-            
-            .main-content { 
-                margin-left: 0; 
-                width: 100%; 
-            }
-            
-            .content-wrapper { 
-                padding: 15px; 
-            }
-            
-            .dashboard-grid { 
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-                gap: 15px; 
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .dashboard-grid { 
-                grid-template-columns: 1fr; 
-            }
-        }
-
-        .kpi-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border-left: 4px solid var(--dev-primary);
-        }
-
-        .kpi-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-        .kpi-card.critical {
-            border-left-color: var(--dev-danger);
-        }
-
-        .kpi-card.warning {
-            border-left-color: var(--dev-warning);
-        }
-
-        .kpi-card.success {
-            border-left-color: var(--dev-success);
-        }
-
-        .kpi-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            line-height: 1;
-        }
-
-        .kpi-label {
-            font-size: 0.9rem;
-            color: var(--dev-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-good {
-            background-color: #d1e7dd;
-            color: #0f5132;
-        }
-
-        .status-warning {
-            background-color: #fff3cd;
-            color: #664d03;
-        }
-
-        .status-critical {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .chart-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .loading-spinner {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 200px;
-        }
-
-        .alert-item {
-            border-left: 4px solid;
-            margin-bottom: 10px;
-        }
-
-        .alert-critical {
-            border-left-color: var(--dev-danger);
-        }
-
-        .alert-warning {
-            border-left-color: var(--dev-warning);
-        }
-
-        .alert-info {
-            border-left-color: var(--dev-info);
-        }
-
-        .metric-trend {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.85rem;
-        }
-
-        .trend-up {
-            color: var(--dev-success);
-        }
-
-        .trend-down {
-            color: var(--dev-danger);
-        }
-
-        .trend-stable {
-            color: var(--dev-secondary);
-        }
-
-        .real-time-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--dev-success);
-            font-size: 0.8rem;
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .section-header {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .tab-content {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            padding: 20px;
-        }
-
-        .nav-tabs .nav-link {
-            border: none;
-            border-radius: 8px 8px 0 0;
-            color: var(--dev-secondary);
-            font-weight: 500;
-        }
-
-        .nav-tabs .nav-link.active {
-            background-color: white;
-            color: var(--dev-primary);
-            border-bottom: 3px solid var(--dev-primary);
-        }
-    </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <i class="bi bi-gear-fill me-2"></i>
-                Developer Private Section
-            </a>
-            <div class="navbar-nav ms-auto">
-                <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle me-1"></i>
-                        <span id="user-name">Developer</span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Perfil</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Configuración</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</a></li>
-                    </ul>
+    <div class="developer-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-code"></i>
+                    <div>
+                        <div class="sidebar-title">Developer Portal</div>
+                        <div class="sidebar-subtitle">SBL Internal System</div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </nav>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Dashboard</div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link active" data-section="overview">
+                            <i class="nav-icon fas fa-chart-line"></i>
+                            <span>Overview</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" data-section="system-status">
+                            <i class="nav-icon fas fa-server"></i>
+                            <span>System Status</span>
+                        </a>
+                    </div>
+                </div>
 
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-2 sidebar">
-                <nav class="nav flex-column p-3">
-                    <a class="nav-link active" href="#" onclick="showSection('dashboard')">
-                        <i class="bi bi-speedometer2"></i>Dashboard
-                    </a>
-                    <a class="nav-link" href="#" onclick="showSection('incidents')">
-                        <i class="bi bi-exclamation-triangle"></i>Incidencias
-                    </a>
-                    <a class="nav-link" href="#" onclick="showSection('changes')">
-                        <i class="bi bi-arrow-repeat"></i>Gestión de Cambios
-                    </a>
-                    <a class="nav-link" href="#" onclick="showSection('documents')">
-                        <i class="bi bi-file-text"></i>Documentación
-                    </a>
-                    <a class="nav-link" href="#" onclick="showSection('vendors')">
-                        <i class="bi bi-building"></i>Proveedores
-                    </a>
-                    <a class="nav-link" href="#" onclick="showSection('alerts')">
-                        <i class="bi bi-bell"></i>Alertas
-                    </a>
-                    <a class="nav-link" href="#" onclick="showSection('monitoring')">
-                        <i class="bi bi-activity"></i>Monitoreo
-                    </a>
-                    <a class="nav-link" href="#" onclick="showSection('audit')">
-                        <i class="bi bi-search"></i>Auditoría
-                    </a>
-                </nav>
-            </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Development</div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" data-section="api-docs">
+                            <i class="nav-icon fas fa-book"></i>
+                            <span>API Documentation</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" data-section="database">
+                            <i class="nav-icon fas fa-database"></i>
+                            <span>Database Tools</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" data-section="logs">
+                            <i class="nav-icon fas fa-file-alt"></i>
+                            <span>System Logs</span>
+                        </a>
+                    </div>
+                </div>
 
-            <!-- Main Content -->
-            <div class="col-md-10 main-content">
-                <!-- Dashboard Section -->
-                <div id="dashboard-section" class="section active">
-                    <div class="section-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h2 class="mb-1">Dashboard de Monitoreo</h2>
-                                <p class="text-muted mb-0">Vista general del estado del sistema</p>
-                            </div>
-                            <div class="real-time-indicator">
-                                <div class="pulse" style="width: 8px; height: 8px; background-color: var(--dev-success); border-radius: 50%;"></div>
-                                Tiempo Real
-                            </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Tools</div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" data-section="gamp5">
+                            <i class="nav-icon fas fa-shield-alt"></i>
+                            <span>GAMP5 Validation</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" data-section="testing">
+                            <i class="nav-icon fas fa-flask"></i>
+                            <span>Testing Suite</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="content-header">
+                <div class="header-content">
+                    <h1 class="header-title" id="page-title">System Overview</h1>
+                    <div class="header-actions">
+                        <div class="status-indicator">
+                            <div class="status-dot"></div>
+                            <span>System Online</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <section id="overview-section" class="content-section active">
+                    <div class="grid grid-4 mb-4">
+                        <div class="dev-card stat-card">
+                            <div class="stat-value" id="active-users">127</div>
+                            <div class="stat-label">Active Users</div>
+                        </div>
+                        <div class="dev-card stat-card">
+                            <div class="stat-value" id="api-requests">8.2K</div>
+                            <div class="stat-label">API Requests (24h)</div>
+                        </div>
+                        <div class="dev-card stat-card">
+                            <div class="stat-value" id="system-uptime">99.8%</div>
+                            <div class="stat-label">System Uptime</div>
+                        </div>
+                        <div class="dev-card stat-card">
+                            <div class="stat-value" id="database-size">2.4GB</div>
+                            <div class="stat-label">Database Size</div>
                         </div>
                     </div>
 
-                    <!-- KPIs Row -->
-                    <div class="row mb-4" id="kpis-container">
-                        <!-- KPIs will be loaded here -->
-                        <div class="col-12 text-center">
-                            <div class="loading-spinner">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Cargando...</span>
+                    <div class="grid grid-2">
+                        <div class="dev-card">
+                            <div class="card-header">
+                                <h3 class="card-title">System Performance</h3>
+                            </div>
+                            <canvas id="performance-chart" height="200"></canvas>
+                        </div>
+                        <div class="dev-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Recent Activity</h3>
+                            </div>
+                            <div id="recent-activity">
+                                <div style="padding: 1rem 0;">
+                                    <div style="margin-bottom: 0.75rem;">
+                                        <i class="fas fa-user" style="color: var(--dev-success);"></i>
+                                        <span style="margin-left: 0.5rem;">New user registration</span>
+                                        <small style="color: var(--dev-text-muted); float: right;">2 min ago</small>
+                                    </div>
+                                    <div style="margin-bottom: 0.75rem;">
+                                        <i class="fas fa-database" style="color: var(--dev-info);"></i>
+                                        <span style="margin-left: 0.5rem;">Database backup completed</span>
+                                        <small style="color: var(--dev-text-muted); float: right;">15 min ago</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </section>
 
-                    <!-- Charts Row -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="chart-container">
-                                <h5 class="mb-3">Tendencia de Rendimiento</h5>
-                                <canvas id="performanceChart" width="400" height="200"></canvas>
+                <section id="system-status-section" class="content-section">
+                    <div class="grid grid-3">
+                        <div class="dev-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Services Status</h3>
+                            </div>
+                            <div id="services-status">
+                                <div class="service-item">
+                                    <div class="service-name">Web Server</div>
+                                    <div class="service-status">
+                                        <i class="fas fa-circle status-online"></i>
+                                        <span>Online</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="chart-container">
-                                <h5 class="mb-3">Timeline de Incidencias</h5>
-                                <canvas id="incidentsChart" width="400" height="200"></canvas>
+                        <div class="dev-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Server Resources</h3>
                             </div>
+                            <div id="server-resources">Loading...</div>
+                        </div>
+                        <div class="dev-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Database Status</h3>
+                            </div>
+                            <div id="database-status">Loading...</div>
                         </div>
                     </div>
+                </section>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="chart-container">
-                                <h5 class="mb-3">Actividad de Usuarios</h5>
-                                <canvas id="userActivityChart" width="400" height="200"></canvas>
-                            </div>
+                <section id="api-docs-section" class="content-section">
+                    <div class="dev-card">
+                        <div class="card-header">
+                            <h3 class="card-title">API Endpoints</h3>
                         </div>
-                        <div class="col-md-6">
-                            <div class="chart-container">
-                                <h5 class="mb-3">Salud del Sistema</h5>
-                                <canvas id="systemHealthChart" width="400" height="200"></canvas>
-                            </div>
-                        </div>
+                        <div id="api-endpoints">Loading API documentation...</div>
                     </div>
-                </div>
+                </section>
 
-                <!-- Incidents Section -->
-                <div id="incidents-section" class="section" style="display: none;">
-                    <div class="section-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h2 class="mb-1">Gestión de Incidencias</h2>
-                                <p class="text-muted mb-0">Registro y seguimiento de incidentes del sistema</p>
-                            </div>
-                            <button class="btn btn-primary" onclick="showCreateIncidentModal()">
-                                <i class="bi bi-plus-circle me-2"></i>Nueva Incidencia
+                <section id="database-section" class="content-section">
+                    <div class="dev-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Database Management Tools</h3>
+                        </div>
+                        <div class="grid grid-2">
+                            <button class="btn-dev btn-dev-secondary">
+                                <i class="fas fa-database"></i>
+                                Query Builder
+                            </button>
+                            <button class="btn-dev btn-dev-secondary">
+                                <i class="fas fa-chart-bar"></i>
+                                Performance Monitor
                             </button>
                         </div>
                     </div>
+                </section>
 
-                    <!-- Filters -->
-                    <div class="row mb-3">
-                        <div class="col-md-3">
-                            <select class="form-select" id="incident-severity-filter">
-                                <option value="">Todas las severidades</option>
-                                <option value="low">Baja</option>
-                                <option value="medium">Media</option>
-                                <option value="high">Alta</option>
-                                <option value="critical">Crítica</option>
-                            </select>
+                <section id="logs-section" class="content-section">
+                    <div class="dev-card">
+                        <div class="card-header">
+                            <h3 class="card-title">System Logs</h3>
                         </div>
-                        <div class="col-md-3">
-                            <select class="form-select" id="incident-status-filter">
-                                <option value="">Todos los estados</option>
-                                <option value="open">Abierto</option>
-                                <option value="in_progress">En progreso</option>
-                                <option value="resolved">Resuelto</option>
-                                <option value="closed">Cerrado</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" id="incident-search" placeholder="Buscar incidencias...">
-                        </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-outline-secondary w-100" onclick="loadIncidents()">
-                                <i class="bi bi-search"></i> Filtrar
-                            </button>
+                        <div id="system-logs" style="background: var(--dev-bg-primary); padding: 1rem; border-radius: 0.5rem; font-family: monospace;">
+                            <div style="color: var(--dev-success);">[2024-01-15 10:30:15] INFO: System startup completed</div>
+                            <div style="color: var(--dev-info);">[2024-01-15 10:30:20] DEBUG: Database connection established</div>
                         </div>
                     </div>
+                </section>
 
-                    <!-- Incidents Table -->
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Título</th>
-                                    <th>Severidad</th>
-                                    <th>Estado</th>
-                                    <th>Reportado por</th>
-                                    <th>Asignado a</th>
-                                    <th>Fecha</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="incidents-table-body">
-                                <!-- Incidents will be loaded here -->
-                            </tbody>
-                        </table>
+                <section id="gamp5-section" class="content-section">
+                    <div class="dev-card">
+                        <div class="card-header">
+                            <h3 class="card-title">GAMP5 Validation Tools</h3>
+                        </div>
+                        <p style="color: var(--dev-text-secondary);">Herramientas para validación de sistemas según estándares GAMP5</p>
                     </div>
-                </div>
+                </section>
 
-                <!-- Documents Section -->
-                <div id="documents-section" class="section" style="display: none;">
-                    <div class="section-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h2 class="mb-1">Gestión de Documentación</h2>
-                                <p class="text-muted mb-0">SOP, AppCare, Handover y documentos operativos</p>
-                            </div>
-                            <button class="btn btn-primary" onclick="showCreateDocumentModal()">
-                                <i class="bi bi-file-plus me-2"></i>Nuevo Documento
-                            </button>
+                <section id="testing-section" class="content-section">
+                    <div class="dev-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Testing Suite</h3>
                         </div>
+                        <p style="color: var(--dev-text-secondary);">Automated testing tools and reports</p>
                     </div>
-
-                    <!-- Document Tabs -->
-                    <ul class="nav nav-tabs" id="document-tabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="sop-tab" data-bs-toggle="tab" data-bs-target="#sop" type="button" role="tab">
-                                <i class="bi bi-file-text me-2"></i>SOP
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="appcare-tab" data-bs-toggle="tab" data-bs-target="#appcare" type="button" role="tab">
-                                <i class="bi bi-tools me-2"></i>AppCare
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="handover-tab" data-bs-toggle="tab" data-bs-target="#handover" type="button" role="tab">
-                                <i class="bi bi-arrow-right-circle me-2"></i>Handover
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="all-docs-tab" data-bs-toggle="tab" data-bs-target="#all-docs" type="button" role="tab">
-                                <i class="bi bi-files me-2"></i>Todos
-                            </button>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content" id="document-tab-content">
-                        <div class="tab-pane fade show active" id="sop" role="tabpanel">
-                            <div id="sop-documents">
-                                <!-- SOP documents will be loaded here -->
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="appcare" role="tabpanel">
-                            <div id="appcare-documents">
-                                <!-- AppCare documents will be loaded here -->
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="handover" role="tabpanel">
-                            <div id="handover-documents">
-                                <!-- Handover documents will be loaded here -->
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="all-docs" role="tabpanel">
-                            <div id="all-documents">
-                                <!-- All documents will be loaded here -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Other sections will be implemented similarly -->
-                <div id="changes-section" class="section" style="display: none;">
-                    <h2>Gestión de Cambios</h2>
-                    <p>Esta sección está en desarrollo...</p>
-                </div>
-
-                <div id="vendors-section" class="section" style="display: none;">
-                    <h2>Gestión de Proveedores</h2>
-                    <p>Esta sección está en desarrollo...</p>
-                </div>
-
-                <div id="alerts-section" class="section" style="display: none;">
-                    <h2>Sistema de Alertas</h2>
-                    <p>Esta sección está en desarrollo...</p>
-                </div>
-
-                <div id="monitoring-section" class="section" style="display: none;">
-                    <h2>Monitoreo Avanzado</h2>
-                    <p>Esta sección está en desarrollo...</p>
-                </div>
-
-                <div id="audit-section" class="section" style="display: none;">
-                    <h2>Auditoría y Logs</h2>
-                    <p>Esta sección está en desarrollo...</p>
-                </div>
+                </section>
             </div>
-        </div>
+        </main>
     </div>
 
-    <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="apps/developer/assets/js/developer.js"></script>
     
     <script>
-        // Global variables
-        let charts = {};
-        let currentSection = 'dashboard';
-        let refreshInterval;
-
-        // Initialize application
         document.addEventListener('DOMContentLoaded', function() {
-            loadUserInfo();
-            loadDashboardData();
-            startRealTimeUpdates();
-        });
-
-        // Navigation functions
-        function showSection(sectionName) {
-            // Hide all sections
-            document.querySelectorAll('.section').forEach(section => {
-                section.style.display = 'none';
-            });
-            
-            // Remove active class from all nav links
-            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            
-            // Show selected section
-            document.getElementById(sectionName + '-section').style.display = 'block';
-            
-            // Add active class to selected nav link
-            event.target.classList.add('active');
-            
-            currentSection = sectionName;
-            
-            // Load section-specific data
-            switch(sectionName) {
-                case 'dashboard':
-                    loadDashboardData();
-                    break;
-                case 'incidents':
-                    loadIncidents();
-                    break;
-                case 'documents':
-                    loadDocuments();
-                    break;
-                // Add other cases as needed
-            }
-        }
-
-        // API functions
-        async function apiCall(endpoint, options = {}) {
-            try {
-                const response = await fetch(`/backend/developer/${endpoint}`, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...options.headers
-                    },
-                    ...options
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                return await response.json();
-            } catch (error) {
-                console.error('API call failed:', error);
-                showError('Error de conexión con el servidor');
-                return null;
-            }
-        }
-
-        // User info functions
-        async function loadUserInfo() {
-            const response = await apiCall('dashboard.php?path=developer-info');
-            if (response && response.success) {
-                document.getElementById('user-name').textContent = response.data.nombre_completo;
-            }
-        }
-
-        // Dashboard functions
-        async function loadDashboardData() {
-            await loadKPIs();
-            await loadCharts();
-        }
-
-        async function loadKPIs() {
-            const response = await apiCall('dashboard.php?path=kpis');
-            if (response && response.success) {
-                renderKPIs(response.data);
-            }
-        }
-
-        function renderKPIs(kpis) {
-            const container = document.getElementById('kpis-container');
-            
-            const kpiCards = [
-                {
-                    title: 'Incidencias Abiertas',
-                    value: kpis.incidents.open_incidents,
-                    status: kpis.incidents.status,
-                    trend: kpis.incidents.trend,
-                    icon: 'exclamation-triangle'
-                },
-                {
-                    title: 'Disponibilidad Sistema',
-                    value: kpis.performance.uptime_percentage + '%',
-                    status: kpis.performance.status,
-                    icon: 'activity'
-                },
-                {
-                    title: 'Alertas de Seguridad',
-                    value: kpis.security.security_alerts,
-                    status: kpis.security.status,
-                    icon: 'shield-exclamation'
-                },
-                {
-                    title: 'Score Cumplimiento',
-                    value: kpis.compliance.compliance_score + '%',
-                    status: kpis.compliance.status,
-                    icon: 'check-circle'
-                }
-            ];
-
-            container.innerHTML = kpiCards.map(kpi => `
-                <div class="col-md-3 mb-3">
-                    <div class="kpi-card ${kpi.status} card h-100">
-                        <div class="card-body text-center">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <i class="bi bi-${kpi.icon} fs-3 text-${getStatusColor(kpi.status)}"></i>
-                                <span class="status-badge status-${kpi.status}">${getStatusText(kpi.status)}</span>
-                            </div>
-                            <div class="kpi-value text-${getStatusColor(kpi.status)}">${kpi.value}</div>
-                            <div class="kpi-label">${kpi.title}</div>
-                            ${kpi.trend ? `
-                                <div class="metric-trend trend-${kpi.trend}">
-                                    <i class="bi bi-${getTrendIcon(kpi.trend)}"></i>
-                                    ${getTrendText(kpi.trend)}
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function loadCharts() {
-            const response = await apiCall('dashboard.php?path=charts');
-            if (response && response.success) {
-                renderCharts(response.data);
-            }
-        }
-
-        function renderCharts(chartData) {
-            // Performance Trend Chart
-            const perfCtx = document.getElementById('performanceChart').getContext('2d');
-            if (charts.performance) charts.performance.destroy();
-            
-            charts.performance = new Chart(perfCtx, {
-                type: 'line',
-                data: {
-                    labels: chartData.performance_trend.map(item => item.time),
-                    datasets: [{
-                        label: 'Tiempo de Respuesta (ms)',
-                        data: chartData.performance_trend.map(item => item.response_time),
-                        borderColor: '#0d6efd',
-                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                        tension: 0.4
-                    }, {
-                        label: 'CPU %',
-                        data: chartData.performance_trend.map(item => item.cpu),
-                        borderColor: '#198754',
-                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-
-            // Incidents Timeline Chart
-            const incCtx = document.getElementById('incidentsChart').getContext('2d');
-            if (charts.incidents) charts.incidents.destroy();
-            
-            charts.incidents = new Chart(incCtx, {
-                type: 'bar',
-                data: {
-                    labels: chartData.incident_timeline.map(item => item.date),
-                    datasets: [{
-                        label: 'Total Incidencias',
-                        data: chartData.incident_timeline.map(item => item.total),
-                        backgroundColor: '#0dcaf0'
-                    }, {
-                        label: 'Críticas',
-                        data: chartData.incident_timeline.map(item => item.critical),
-                        backgroundColor: '#dc3545'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-
-            // User Activity Chart
-            const userCtx = document.getElementById('userActivityChart').getContext('2d');
-            if (charts.userActivity) charts.userActivity.destroy();
-            
-            charts.userActivity = new Chart(userCtx, {
-                type: 'line',
-                data: {
-                    labels: chartData.user_activity.map(item => item.hour),
-                    datasets: [{
-                        label: 'Usuarios Activos',
-                        data: chartData.user_activity.map(item => item.users),
-                        borderColor: '#ffc107',
-                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-
-            // System Health Chart
-            const healthCtx = document.getElementById('systemHealthChart').getContext('2d');
-            if (charts.systemHealth) charts.systemHealth.destroy();
-            
-            charts.systemHealth = new Chart(healthCtx, {
-                type: 'line',
-                data: {
-                    labels: chartData.system_health.map(item => new Date(item.timestamp).toLocaleTimeString()),
-                    datasets: [{
-                        label: 'CPU %',
-                        data: chartData.system_health.map(item => item.cpu),
-                        borderColor: '#dc3545',
-                        backgroundColor: 'rgba(220, 53, 69, 0.1)'
-                    }, {
-                        label: 'Memoria %',
-                        data: chartData.system_health.map(item => item.memory),
-                        borderColor: '#198754',
-                        backgroundColor: 'rgba(25, 135, 84, 0.1)'
-                    }, {
-                        label: 'Disco %',
-                        data: chartData.system_health.map(item => item.disk),
-                        borderColor: '#0dcaf0',
-                        backgroundColor: 'rgba(13, 202, 240, 0.1)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100
-                        }
-                    }
-                }
-            });
-        }
-
-        // Incident functions
-        async function loadIncidents() {
-            const response = await apiCall('incidents.php?path=incidents');
-            if (response && response.success) {
-                renderIncidentsTable(response.data);
-            }
-        }
-
-        function renderIncidentsTable(incidents) {
-            const tbody = document.getElementById('incidents-table-body');
-            
-            if (incidents.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay incidencias</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = incidents.map(incident => `
-                <tr>
-                    <td>#${incident.id}</td>
-                    <td>
-                        <div class="fw-bold">${incident.title}</div>
-                        <small class="text-muted">${incident.category}</small>
-                    </td>
-                    <td>
-                        <span class="badge bg-${getSeverityColor(incident.severity)}">
-                            ${incident.severity.toUpperCase()}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge bg-${getStatusColor(incident.status)}">
-                            ${incident.status.replace('_', ' ').toUpperCase()}
-                        </span>
-                    </td>
-                    <td>${incident.reporter_name || 'N/A'}</td>
-                    <td>${incident.assigned_name || 'Sin asignar'}</td>
-                    <td>${new Date(incident.created_at).toLocaleDateString()}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="viewIncident(${incident.id})">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning" onclick="editIncident(${incident.id})">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // Document functions
-        async function loadDocuments(type = '') {
-            const url = type ? `documents.php?path=list&document_type=${type}` : 'documents.php?path=list';
-            const response = await apiCall(url);
-            if (response && response.success) {
-                renderDocuments(response.data, type);
-            }
-        }
-
-        function renderDocuments(documents, type) {
-            const containerId = type ? `${type}-documents` : 'all-documents';
-            const container = document.getElementById(containerId);
-            
-            if (documents.length === 0) {
-                container.innerHTML = '<p class="text-center text-muted">No hay documentos disponibles</p>';
-                return;
-            }
-
-            container.innerHTML = documents.map(doc => `
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="flex-grow-1">
-                                <h5 class="card-title">
-                                    ${doc.title}
-                                    <span class="badge bg-secondary ms-2">v${doc.version}</span>
-                                </h5>
-                                <p class="card-text text-muted">${doc.description || 'Sin descripción'}</p>
-                                <div class="d-flex gap-3 small text-muted">
-                                    <span><i class="bi bi-person me-1"></i>${doc.author_name}</span>
-                                    <span><i class="bi bi-calendar me-1"></i>${new Date(doc.created_at).toLocaleDateString()}</span>
-                                    <span><i class="bi bi-building me-1"></i>${doc.department}</span>
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge bg-${getDocumentStatusColor(doc.status)} mb-2">
-                                    ${doc.status.toUpperCase()}
-                                </span>
-                                <div>
-                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="viewDocument(${doc.id})">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-warning me-1" onclick="editDocument(${doc.id})">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    ${doc.status === 'review' ? `
-                                        <button class="btn btn-sm btn-outline-success" onclick="reviewDocument(${doc.id}, 'approve')">
-                                            <i class="bi bi-check"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="reviewDocument(${doc.id}, 'reject')">
-                                            <i class="bi bi-x"></i>
-                                        </button>
-                                    ` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Real-time updates
-        function startRealTimeUpdates() {
-            // Update every 30 seconds
-            refreshInterval = setInterval(() => {
-                if (currentSection === 'dashboard') {
-                    loadKPIs();
-                    loadCharts();
-                }
-            }, 30000);
-        }
-
-        // Utility functions
-        function getStatusColor(status) {
-            const colors = {
-                'good': 'success',
-                'warning': 'warning',
-                'critical': 'danger',
-                'attention': 'info'
-            };
-            return colors[status] || 'secondary';
-        }
-
-        function getStatusText(status) {
-            const texts = {
-                'good': 'Bien',
-                'warning': 'Advertencia',
-                'critical': 'Crítico',
-                'attention': 'Atención'
-            };
-            return texts[status] || 'Desconocido';
-        }
-
-        function getSeverityColor(severity) {
-            const colors = {
-                'low': 'success',
-                'medium': 'warning',
-                'high': 'danger',
-                'critical': 'dark'
-            };
-            return colors[severity] || 'secondary';
-        }
-
-        function getDocumentStatusColor(status) {
-            const colors = {
-                'draft': 'secondary',
-                'review': 'warning',
-                'approved': 'info',
-                'active': 'success',
-                'archived': 'dark',
-                'expired': 'danger'
-            };
-            return colors[status] || 'secondary';
-        }
-
-        function getTrendIcon(trend) {
-            const icons = {
-                'increasing': 'arrow-up',
-                'decreasing': 'arrow-down',
-                'stable': 'arrow-right'
-            };
-            return icons[trend] || 'arrow-right';
-        }
-
-        function getTrendText(trend) {
-            const texts = {
-                'increasing': 'Aumentando',
-                'decreasing': 'Disminuyendo',
-                'stable': 'Estable'
-            };
-            return texts[trend] || 'Estable';
-        }
-
-        function showError(message) {
-            // Implement error notification
-            console.error(message);
-        }
-
-        function showSuccess(message) {
-            // Implement success notification
-            console.log(message);
-        }
-
-        // Modal functions (to be implemented)
-        function showCreateIncidentModal() {
-            // Implement create incident modal
-            console.log('Create incident modal');
-        }
-
-        function showCreateDocumentModal() {
-            // Implement create document modal
-            console.log('Create document modal');
-        }
-
-        function viewIncident(id) {
-            // Implement view incident
-            console.log('View incident:', id);
-        }
-
-        function editIncident(id) {
-            // Implement edit incident
-            console.log('Edit incident:', id);
-        }
-
-        function viewDocument(id) {
-            // Implement view document
-            console.log('View document:', id);
-        }
-
-        function editDocument(id) {
-            // Implement edit document
-            console.log('Edit document:', id);
-        }
-
-        function reviewDocument(id, action) {
-            // Implement review document
-            console.log('Review document:', id, action);
-        }
-
-        function logout() {
-            // Implement logout
-            window.location.href = '/';
-        }
-
-        // Tab change events
-        document.addEventListener('shown.bs.tab', function (event) {
-            const tabId = event.target.id;
-            
-            if (tabId.includes('sop')) {
-                loadDocuments('sop');
-            } else if (tabId.includes('appcare')) {
-                loadDocuments('appcare');
-            } else if (tabId.includes('handover')) {
-                loadDocuments('handover');
-            } else if (tabId.includes('all-docs')) {
-                loadDocuments();
-            }
-        });
-
-        // Initialize document tabs
-        document.addEventListener('DOMContentLoaded', function() {
-            loadDocuments('sop'); // Load SOP documents by default
+            DeveloperPortal.init();
         });
     </script>
 </body>
